@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<!-- saved from url=(0071)file:///C:/Users/The%20Real%20Kapistus/Downloads/commander-tracker.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Commander Table</title>
+<style>
+  :root{
+    --void:#14161B;
+    --slate:#1D2027;
+    --slate-2:#262A33;
+    --line:#33384333;
+    --bone:#EDEAE2;
+    --bone-dim:#A9A79E;
+    --gold:#D9A94E;
+    --danger:#C24949;
+    --p1:#C1502E;
+    --p1-dim:#3A241C;
+    --p2:#4C8065;
+    --p2-dim:#20302A;
+    --p3:#3E6E93;
+    --p3-dim:#1D2C3A;
+    --p4:#8564A8;
+    --p4-dim:#2E2540;
+    --p5:#A8547E;
+    --p5-dim:#331F28;
+    --p6:#3E8F82;
+    --p6-dim:#1B2E2A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{
+    margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+    background:var(--void); color:var(--bone);
+    font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
+    touch-action:manipulation;
+  }
+  .board{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    gap:3px;
+    background:var(--void);
+  }
+  .board-row{
+    display:flex; flex:1; gap:3px; min-height:0;
+  }
+  .seat{
+    position:relative;
+    flex:1; min-width:0; min-height:0;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    background:var(--slate);
+  }
+  .seat[data-color="1"]{ --accent:var(--p1); --accent-dim:var(--p1-dim); }
+  .seat[data-color="2"]{ --accent:var(--p2); --accent-dim:var(--p2-dim); }
+  .seat[data-color="3"]{ --accent:var(--p3); --accent-dim:var(--p3-dim); }
+  .seat[data-color="4"]{ --accent:var(--p4); --accent-dim:var(--p4-dim); }
+  .seat[data-color="5"]{ --accent:var(--p5); --accent-dim:var(--p5-dim); }
+  .seat[data-color="6"]{ --accent:var(--p6); --accent-dim:var(--p6-dim); }
+  .seat::before{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, var(--accent-dim) 0%, var(--slate) 55%);
+    opacity:.55; pointer-events:none;
+  }
+  .seat.flip::before{
+    background:linear-gradient(0deg, var(--accent-dim) 0%, var(--slate) 55%);
+  }
+  .seat.flip .panel{ transform:rotate(180deg); }
+  .panel{
+    position:relative; z-index:1;
+    width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:clamp(8px,2vmin,20px);
+    gap:clamp(4px,1.2vmin,10px);
+    transition:filter .3s, opacity .3s;
+    overflow-y:auto; overflow-x:hidden;
+    scrollbar-width:none;
+  }
+  .panel::-webkit-scrollbar{ display:none; }
+  .life-total.negative{ color:var(--danger); }
+  .badge-btn{
+    position:absolute; z-index:6;
+    width:clamp(30px,5.5vmin,42px); height:clamp(30px,5.5vmin,42px);
+    border-radius:50%;
+    background:#00000040;
+    border:1.5px solid #D9A94E4D;
+    color:#D9A94E4D;
+    font-size:clamp(14px,3vmin,19px);
+    display:flex; align-items:center; justify-content:center;
+    transition:background .25s, border-color .25s, color .25s, box-shadow .25s;
+  }
+  .badge-btn.active{
+    background:#00000060;
+    border-color:var(--gold);
+    color:var(--gold);
+    box-shadow:0 0 12px 1px #D9A94E70;
+  }
+  .badge-btn.monarch{ bottom:6px; left:6px; font-size:clamp(17px,3.6vmin,24px); }
+  .badge-btn.initiative{ bottom:6px; right:6px; }
+  .badge-btn.monarch.active{
+    background:var(--gold);
+    color:#231a08;
+    border-color:var(--gold);
+    box-shadow:0 0 16px 3px #D9A94E95;
+    animation:monarchGlow 2.2s ease-in-out infinite;
+  }
+  @keyframes monarchGlow{
+    0%, 100%{ box-shadow:0 0 12px 2px #D9A94E70; }
+    50%{ box-shadow:0 0 20px 5px #D9A94EB0; }
+  }
+  .name{
+    font-size:clamp(14px,2.4vmin,22px);
+    font-weight:600;
+    letter-spacing:.04em;
+    color:var(--accent);
+    padding:2px 14px;
+    border-radius:999px;
+    background:#00000033;
+    min-width:2em; text-align:center;
+    border:1px solid transparent;
+  }
+  .name[contenteditable="true"]{ outline:none; border:1px solid var(--accent); }
+  .life-row{
+    display:flex; align-items:center; justify-content:center;
+    gap:clamp(10px,3vmin,28px);
+  }
+  .life-btn{
+    width:clamp(44px,9vmin,72px); height:clamp(44px,9vmin,72px);
+    border-radius:50%;
+    border:2px solid var(--accent);
+    background:#00000030;
+    color:var(--bone);
+    font-size:clamp(20px,4vmin,32px);
+    line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:600;
+    touch-action:manipulation;
+  }
+  .life-btn:active{ background:var(--accent); color:var(--void); }
+  .life-total{
+    font-family:"Bahnschrift","Arial Narrow",-apple-system,sans-serif;
+    font-size:clamp(48px,11vmin,110px);
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    min-width:2.2ch; text-align:center;
+    line-height:1;
+    cursor:text;
+  }
+  .life-total.pulse-up{ animation:pulseUp .35s ease; }
+  .life-total.pulse-down{ animation:pulseDown .35s ease; }
+  @keyframes pulseUp{ 0%{color:var(--bone);} 40%{color:#8FDB9E;} 100%{color:var(--bone);} }
+  @keyframes pulseDown{ 0%{color:var(--bone);} 40%{color:var(--danger);} 100%{color:var(--bone);} }
+  .life-input{
+    font-family:inherit; font-size:clamp(40px,9vmin,90px); font-weight:700;
+    width:2.4ch; text-align:center; background:transparent; color:var(--bone);
+    border:none; border-bottom:2px solid var(--accent); outline:none;
+    -moz-appearance:textfield;
+  }
+  .life-input::-webkit-outer-spin-button, .life-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .subrow{
+    display:flex; gap:clamp(6px,1.6vmin,16px); align-items:center; justify-content:center;
+    flex-wrap:wrap;
+  }
+  .counter{
+    display:flex; align-items:center; gap:4px;
+    background:#00000033; border-radius:999px;
+    padding:3px 6px;
+    font-size:clamp(11px,1.9vmin,15px);
+  }
+  .counter .clabel{ color:var(--bone-dim); padding:0 4px; font-family:"SFMono-Regular",Consolas,monospace; letter-spacing:.02em; }
+  .counter.poison.hot .clabel, .counter.poison.hot .cval{ color:var(--danger); }
+  .cbtn{
+    width:clamp(22px,4vmin,32px); height:clamp(22px,4vmin,32px);
+    border-radius:50%; border:1px solid var(--bone-dim); background:transparent;
+    color:var(--bone); font-size:clamp(13px,2.4vmin,18px); font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cbtn:active{ background:var(--bone-dim); color:var(--void); }
+  .cval{
+    min-width:1.6ch; text-align:center; font-weight:600;
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:clamp(13px,2.2vmin,18px);
+  }
+  .dmg-btn{
+    margin-top:2px;
+    font-size:clamp(11px,1.8vmin,14px);
+    color:var(--bone-dim);
+    background:#00000033;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:5px 14px;
+    letter-spacing:.03em;
+  }
+  .dmg-btn.has-dmg{ color:var(--gold); border-color:var(--gold); }
+  .dmg-btn:disabled{ opacity:.55; }
+
+  .expand-toggle{
+    margin-top:2px;
+    font-size:clamp(10.5px,1.7vmin,13px);
+    color:var(--bone-dim);
+    background:#00000033;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:5px 14px;
+    letter-spacing:.02em;
+    display:flex; align-items:center; gap:6px;
+  }
+  .expand-toggle .chevron{ display:inline-block; transition:transform .25s; font-size:10px; }
+  .expand-toggle.expanded .chevron{ transform:rotate(180deg); }
+  .expand-toggle.warn{
+    color:var(--danger); border-color:var(--danger);
+    animation:toggleWarn 1.2s ease-in-out infinite;
+  }
+  @keyframes toggleWarn{
+    0%,100%{ box-shadow:0 0 0 0 #C2494900; }
+    50%{ box-shadow:0 0 9px 2px #C2494980; }
+  }
+  .extra-wrap{
+    display:grid; grid-template-rows:0fr;
+    transition:grid-template-rows .3s ease;
+    width:100%;
+  }
+  .extra-wrap.expanded{ grid-template-rows:1fr; }
+  .extra-inner{
+    overflow:hidden; min-height:0;
+    display:flex; flex-direction:column; align-items:center;
+    gap:clamp(4px,1.2vmin,10px);
+    padding-top:clamp(4px,1.2vmin,10px);
+  }
+
+  .mana-column{
+    display:flex; flex-direction:column; gap:clamp(3px,0.9vmin,6px);
+    align-items:center; width:100%; max-width:190px; margin:2px auto 0;
+  }
+  .counter.mana{
+    width:100%; justify-content:center;
+    border-left:3px solid var(--mcolor, var(--gold));
+  }
+  .counter.mana .clabel{ min-width:1.1em; text-align:center; color:var(--bone); font-weight:700; }
+  .counter.custom-counter{ width:100%; max-width:190px; justify-content:center; margin:0 auto; }
+  .counter.standalone-counter{
+    margin:2px auto 0; justify-content:center; max-width:190px;
+  }
+  .custom-label{
+    color:var(--bone-dim); padding:0 4px; font-family:"SFMono-Regular",Consolas,monospace;
+    letter-spacing:.02em; max-width:8ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    cursor:text;
+  }
+  .custom-label[contenteditable="true"]{ outline:none; color:var(--gold); white-space:normal; }
+
+  .hub{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:clamp(180px,30vmin,320px); height:clamp(56px,8vmin,80px);
+    border-radius:999px;
+    background:var(--slate-2);
+    border:2px solid #00000055;
+    display:flex; align-items:center; justify-content:center;
+    z-index:5;
+    box-shadow:0 0 0 4px var(--void);
+  }
+  .hub-btns{ display:flex; width:100%; height:100%; }
+  .hub-btn{
+    flex:1; background:transparent; border:none; color:var(--bone-dim);
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(15px,3vmin,22px);
+  }
+  .hub-btn:not(:last-child){ border-right:1px solid #00000055; }
+  .hub-btn:active{ color:var(--gold); }
+
+  .icon-reset::before{ content:"\21BB"; }
+  .icon-gear::before{ content:"\2699"; }
+  .icon-dice::before{ content:"\2685"; }
+
+  .disk-backdrop{
+    position:fixed; inset:0; background:#0A0B0DA0;
+    opacity:0; pointer-events:none; transition:opacity .3s;
+    z-index:14;
+  }
+  .disk-backdrop.open{ opacity:1; pointer-events:auto; }
+  .disk{
+    position:absolute; top:50%; left:50%;
+    width:clamp(200px,38vmin,380px); height:clamp(200px,38vmin,380px);
+    transform:translate(-50%,-50%) scale(0); opacity:0;
+    pointer-events:none;
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+    z-index:15;
+  }
+  .disk.open{ transform:translate(-50%,-50%) scale(1); opacity:1; pointer-events:auto; }
+  .disk-svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+  .disk-bezel{ filter:drop-shadow(0 0 16px #00000075); }
+  .disk-rim-outer{ fill:none; stroke:#0E1015; stroke-width:10; }
+  .disk-rim-gold{ fill:none; stroke:var(--gold); stroke-width:1.4; opacity:.65; }
+  .disk-orbit{ fill:none; stroke:var(--gold); stroke-width:1; stroke-dasharray:2 5; opacity:.55; }
+  .disk-divider{ stroke:#0000004a; stroke-width:1.6; }
+  .disk-tick{ stroke:var(--gold); opacity:.55; }
+  .disk.landed .disk-rim-outer{ stroke:#0E1015; }
+  .disk-medallion-ring{ fill:#14161B; stroke:var(--gold); stroke-width:2; transition:stroke .4s; }
+  .disk.landed .disk-medallion-ring{ stroke:var(--winner-color, var(--gold)); }
+  .disk-medallion-star{ fill:var(--gold); opacity:.9; }
+  .disk-gem{ fill:url(#gem); }
+  .disk-needle-wrap{
+    position:absolute; inset:0; width:100%; height:100%;
+    transform:rotate(0deg); transform-origin:50% 50%;
+    transition:transform 2.8s cubic-bezier(.12,.72,.18,1);
+    filter:drop-shadow(0 3px 4px #00000090);
+  }
+  .disk-result{
+    position:absolute; bottom:-14%; left:50%; transform:translateX(-50%);
+    white-space:nowrap; font-size:clamp(13px,2.4vmin,18px); font-weight:700;
+    letter-spacing:.04em; color:var(--gold);
+    background:#0A0B0DD0; padding:6px 16px; border-radius:999px;
+    border:1px solid var(--gold);
+    opacity:0; transition:opacity .3s;
+  }
+  .disk-result.show{ opacity:1; }
+
+  .seat.start-highlight .panel{ animation:startGlow 1s ease-in-out infinite; }
+  @keyframes startGlow{
+    0%, 100%{ box-shadow:inset 0 0 0 0 var(--accent); }
+    50%{ box-shadow:inset 0 0 40px 6px var(--accent); }
+  }
+
+  .dungeon-backdrop{
+    position:fixed; inset:0; background:#0A0B0DA0;
+    opacity:0; pointer-events:none; transition:opacity .25s;
+    z-index:24;
+  }
+  .dungeon-backdrop.open{ opacity:1; pointer-events:auto; }
+  .dungeon-window{
+    position:fixed;
+    background:var(--slate);
+    border:1.5px solid var(--dwin-accent, var(--gold));
+    border-radius:16px;
+    box-shadow:0 14px 34px #00000090;
+    padding:14px 16px 16px;
+    opacity:0; transform:scale(.9);
+    pointer-events:none;
+    transition:opacity .22s, transform .22s;
+    z-index:25;
+    overflow:auto;
+    color:var(--bone);
+  }
+  .dungeon-window.open{ opacity:1; transform:scale(1); pointer-events:auto; }
+  .dungeon-window h3{
+    margin:0 0 2px; font-size:clamp(14px,2vmin,18px); letter-spacing:.03em; font-weight:700;
+    color:var(--dwin-accent, var(--gold));
+  }
+  .dungeon-window .dsub{ color:var(--bone-dim); font-size:clamp(10px,1.4vmin,12px); margin:0 0 10px; }
+  .dungeon-map{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
+  .dungeon-level{ display:flex; gap:6px; justify-content:center; }
+  .room-btn{
+    flex:1; min-width:0;
+    padding:7px 6px;
+    border-radius:8px;
+    border:1.5px dashed #D9A94E40;
+    background:#00000030;
+    color:var(--bone-dim);
+    font-size:clamp(10px,1.5vmin,12.5px);
+    font-weight:600;
+    letter-spacing:.01em;
+    opacity:.45;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .room-btn.visited{
+    border:1.5px solid #D9A94E80; background:#D9A94E1F; color:var(--bone); opacity:1;
+  }
+  .room-btn.current{
+    border:1.5px solid var(--gold); background:#D9A94E33; color:var(--gold); opacity:1;
+    box-shadow:0 0 10px 1px #D9A94E60;
+  }
+  .room-btn.available{
+    border:1.5px dashed var(--gold); color:var(--bone); opacity:1;
+    animation:roomPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes roomPulse{
+    0%,100%{ box-shadow:0 0 0 0 #D9A94E00; }
+    50%{ box-shadow:0 0 9px 1px #D9A94E60; }
+  }
+  .dungeon-tip{
+    position:relative;
+    background:#00000055; border:1px solid #D9A94E55; border-radius:9px;
+    padding:8px 10px 9px; margin:0 0 10px;
+    min-height:18px;
+  }
+  .dungeon-tip::before{
+    content:""; position:absolute; top:-6px; left:20px;
+    width:10px; height:10px; background:#0A0B0D; border-left:1px solid #D9A94E55; border-top:1px solid #D9A94E55;
+    transform:rotate(45deg);
+  }
+  .dungeon-tip .tip-name{
+    display:block; font-size:clamp(11px,1.6vmin,13px); font-weight:700; color:var(--gold); margin-bottom:2px;
+  }
+  .dungeon-tip .tip-text{
+    display:block; font-size:clamp(10px,1.5vmin,12px); color:var(--bone); line-height:1.4;
+  }
+  .dungeon-tip .tip-placeholder{ color:var(--bone-dim); font-style:italic; }
+  .dungeon-actions{ display:flex; justify-content:flex-end; margin-top:10px; }
+  .dungeon-actions .btn{ flex:none; padding:7px 14px; font-size:11.5px; }
+  .dungeon-complete{
+    text-align:center; font-size:clamp(11px,1.6vmin,13px); color:var(--gold);
+    letter-spacing:.04em; margin-top:8px; display:none;
+  }
+  .dungeon-window.done .dungeon-complete{ display:block; }
+
+  .overlay{
+    position:fixed; inset:0; background:#0A0B0DE0;
+    display:none; align-items:center; justify-content:center; z-index:20;
+    padding:16px;
+  }
+  .overlay.open{ display:flex; }
+  .card{
+    background:var(--slate); border:1px solid var(--line); border-radius:18px;
+    padding:20px 22px; width:min(560px,92vw); max-height:88vh; overflow:auto;
+    color:var(--bone);
+  }
+  .card h2{
+    margin:0 0 4px; font-size:20px; letter-spacing:.03em; font-weight:600;
+  }
+  .card .sub{ color:var(--bone-dim); font-size:13px; margin:0 0 16px; }
+  .dmg-row{
+    padding:12px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  .dmg-row:last-child{ border-bottom:none; }
+  .dmg-row-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .dot{ width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+  .dmg-row .dname{ flex:1; font-size:15px; font-weight:600; }
+  .partner-toggle{
+    font-size:11px; letter-spacing:.03em; color:var(--bone-dim);
+    background:#00000033; border:1px solid var(--line); border-radius:999px;
+    padding:5px 12px; font-weight:600;
+  }
+  .partner-toggle.active{ color:var(--gold); border-color:var(--gold); background:#00000033; }
+  .dmg-sources{ display:flex; flex-direction:column; gap:8px; }
+  .dmg-row:not(.has-partner) .dmg-source[data-role="source-b"]{ display:none; }
+  .dmg-source{ display:flex; align-items:center; gap:8px; }
+  .dmg-source .src-label{ flex:1; font-size:12px; color:var(--bone-dim); letter-spacing:.02em; }
+  .dmg-source.lethal .dval{ color:var(--danger); }
+  .lethal-tag{ font-size:10px; color:var(--danger); border:1px solid var(--danger); border-radius:5px; padding:1px 5px; letter-spacing:.05em; }
+  .dmg-source .dbtn{
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--bone-dim);
+    background:transparent; color:var(--bone); font-size:18px; font-weight:600; flex-shrink:0;
+  }
+  .dmg-source .dval{ min-width:2.4ch; text-align:center; font-family:"SFMono-Regular",Consolas,monospace; font-size:17px; font-weight:700; }
+  .row-actions{ display:flex; gap:10px; margin-top:18px; }
+  .btn{
+    flex:1; padding:12px; border-radius:10px; border:1px solid var(--line);
+    background:var(--slate-2); color:var(--bone); font-size:14px; font-weight:600;
+    letter-spacing:.03em;
+  }
+  .btn.primary{ background:var(--gold); color:#231a08; border-color:var(--gold); }
+  .btn.danger{ background:var(--danger); color:#2a0c0c; border-color:var(--danger); }
+  .close-x{
+    position:absolute; top:14px; right:16px; background:none; border:none;
+    color:var(--bone-dim); font-size:22px; line-height:1;
+  }
+  .settings-group{ margin-bottom:18px; }
+  .settings-group .glabel{ font-size:12px; color:var(--bone-dim); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; display:block; }
+  .life-options{ display:flex; gap:8px; flex-wrap:wrap; }
+  .life-opt{
+    padding:9px 16px; border-radius:8px; border:1px solid var(--line); background:var(--slate-2);
+    color:var(--bone); font-size:14px; font-weight:600;
+  }
+  .life-opt.active{ background:var(--gold); color:#231a08; border-color:var(--gold); }
+  .custom-life{
+    display:flex; align-items:center; gap:8px; margin-top:8px;
+  }
+  .custom-life input{
+    width:80px; padding:8px; border-radius:8px; border:1px solid var(--line);
+    background:var(--slate-2); color:var(--bone); font-size:14px;
+  }
+  .rel{ position:relative; }
+</style>
+</head>
+<body>
+
+<div class="board" id="board">
+  <div class="board-row" id="topRow"><div class="seat flip" data-color="1" data-seat="1"><div class="panel"><button class="badge-btn monarch" data-role="monarchBtn" aria-label="Monarch">♛</button><button class="badge-btn initiative" data-role="initiativeBtn" aria-label="Initiative">⚔</button><div class="name" data-role="name" contenteditable="false">Player 1</div><div class="life-row"><button class="life-btn minus" data-role="minus" aria-label="Lose life">−</button><div class="life-total" data-role="life">40</div><button class="life-btn plus" data-role="plus" aria-label="Gain life">+</button></div><button class="dmg-btn" data-role="dmgOpen">Commander damage</button><div class="counter tax standalone-counter"><button class="cbtn" data-role="taxMinus">−</button><span class="clabel">Tax</span><span class="cval" data-role="taxVal">0</span><button class="cbtn" data-role="taxPlus">+</button></div><button class="expand-toggle" data-role="expandToggle"><span class="toggle-label" data-role="expandToggle">More counters</span><span class="chevron" data-role="expandToggle">▾</span></button><div class="extra-wrap" data-role="extraWrap"><div class="extra-inner"><div class="subrow"><div class="counter poison" data-role="poisonBox"><button class="cbtn" data-role="poisonMinus">−</button><span class="clabel">Poison</span><span class="cval" data-role="poisonVal">0</span><button class="cbtn" data-role="poisonPlus">+</button></div><div class="counter storm"><button class="cbtn" data-role="stormMinus">−</button><span class="clabel">Storm</span><span class="cval" data-role="stormVal">0</span><button class="cbtn" data-role="stormPlus">+</button></div></div><div class="mana-column"><div class="counter mana" style="--mcolor:#E8DFC8"><button class="cbtn" data-role="manaMinus" data-mana="W">−</button><span class="clabel">W</span><span class="cval" data-role="manaVal" data-mana="W">0</span><button class="cbtn" data-role="manaPlus" data-mana="W">+</button></div><div class="counter mana" style="--mcolor:#4F83C4"><button class="cbtn" data-role="manaMinus" data-mana="U">−</button><span class="clabel">U</span><span class="cval" data-role="manaVal" data-mana="U">0</span><button class="cbtn" data-role="manaPlus" data-mana="U">+</button></div><div class="counter mana" style="--mcolor:#6B5B73"><button class="cbtn" data-role="manaMinus" data-mana="B">−</button><span class="clabel">B</span><span class="cval" data-role="manaVal" data-mana="B">0</span><button class="cbtn" data-role="manaPlus" data-mana="B">+</button></div><div class="counter mana" style="--mcolor:#C0503A"><button class="cbtn" data-role="manaMinus" data-mana="R">−</button><span class="clabel">R</span><span class="cval" data-role="manaVal" data-mana="R">0</span><button class="cbtn" data-role="manaPlus" data-mana="R">+</button></div><div class="counter mana" style="--mcolor:#4C8065"><button class="cbtn" data-role="manaMinus" data-mana="G">−</button><span class="clabel">G</span><span class="cval" data-role="manaVal" data-mana="G">0</span><button class="cbtn" data-role="manaPlus" data-mana="G">+</button></div><div class="counter mana" style="--mcolor:#8A8A8A"><button class="cbtn" data-role="manaMinus" data-mana="C">−</button><span class="clabel">C</span><span class="cval" data-role="manaVal" data-mana="C">0</span><button class="cbtn" data-role="manaPlus" data-mana="C">+</button></div></div><div class="counter custom-counter"><button class="cbtn" data-role="customMinus">−</button><span class="custom-label" data-role="customLabel" contenteditable="false">Counter</span><span class="cval" data-role="customVal">0</span><button class="cbtn" data-role="customPlus">+</button></div><button class="dmg-btn" data-role="randomOpp">Random opponent</button></div></div></div></div><div class="seat flip" data-color="2" data-seat="2"><div class="panel"><button class="badge-btn monarch" data-role="monarchBtn" aria-label="Monarch">♛</button><button class="badge-btn initiative" data-role="initiativeBtn" aria-label="Initiative">⚔</button><div class="name" data-role="name" contenteditable="false">Player 2</div><div class="life-row"><button class="life-btn minus" data-role="minus" aria-label="Lose life">−</button><div class="life-total" data-role="life">40</div><button class="life-btn plus" data-role="plus" aria-label="Gain life">+</button></div><button class="dmg-btn" data-role="dmgOpen">Commander damage</button><div class="counter tax standalone-counter"><button class="cbtn" data-role="taxMinus">−</button><span class="clabel">Tax</span><span class="cval" data-role="taxVal">0</span><button class="cbtn" data-role="taxPlus">+</button></div><button class="expand-toggle" data-role="expandToggle"><span class="toggle-label" data-role="expandToggle">More counters</span><span class="chevron" data-role="expandToggle">▾</span></button><div class="extra-wrap" data-role="extraWrap"><div class="extra-inner"><div class="subrow"><div class="counter poison" data-role="poisonBox"><button class="cbtn" data-role="poisonMinus">−</button><span class="clabel">Poison</span><span class="cval" data-role="poisonVal">0</span><button class="cbtn" data-role="poisonPlus">+</button></div><div class="counter storm"><button class="cbtn" data-role="stormMinus">−</button><span class="clabel">Storm</span><span class="cval" data-role="stormVal">0</span><button class="cbtn" data-role="stormPlus">+</button></div></div><div class="mana-column"><div class="counter mana" style="--mcolor:#E8DFC8"><button class="cbtn" data-role="manaMinus" data-mana="W">−</button><span class="clabel">W</span><span class="cval" data-role="manaVal" data-mana="W">0</span><button class="cbtn" data-role="manaPlus" data-mana="W">+</button></div><div class="counter mana" style="--mcolor:#4F83C4"><button class="cbtn" data-role="manaMinus" data-mana="U">−</button><span class="clabel">U</span><span class="cval" data-role="manaVal" data-mana="U">0</span><button class="cbtn" data-role="manaPlus" data-mana="U">+</button></div><div class="counter mana" style="--mcolor:#6B5B73"><button class="cbtn" data-role="manaMinus" data-mana="B">−</button><span class="clabel">B</span><span class="cval" data-role="manaVal" data-mana="B">0</span><button class="cbtn" data-role="manaPlus" data-mana="B">+</button></div><div class="counter mana" style="--mcolor:#C0503A"><button class="cbtn" data-role="manaMinus" data-mana="R">−</button><span class="clabel">R</span><span class="cval" data-role="manaVal" data-mana="R">0</span><button class="cbtn" data-role="manaPlus" data-mana="R">+</button></div><div class="counter mana" style="--mcolor:#4C8065"><button class="cbtn" data-role="manaMinus" data-mana="G">−</button><span class="clabel">G</span><span class="cval" data-role="manaVal" data-mana="G">0</span><button class="cbtn" data-role="manaPlus" data-mana="G">+</button></div><div class="counter mana" style="--mcolor:#8A8A8A"><button class="cbtn" data-role="manaMinus" data-mana="C">−</button><span class="clabel">C</span><span class="cval" data-role="manaVal" data-mana="C">0</span><button class="cbtn" data-role="manaPlus" data-mana="C">+</button></div></div><div class="counter custom-counter"><button class="cbtn" data-role="customMinus">−</button><span class="custom-label" data-role="customLabel" contenteditable="false">Counter</span><span class="cval" data-role="customVal">0</span><button class="cbtn" data-role="customPlus">+</button></div><button class="dmg-btn" data-role="randomOpp">Random opponent</button></div></div></div></div></div>
+  <div class="board-row" id="bottomRow"><div class="seat" data-color="4" data-seat="4"><div class="panel"><button class="badge-btn monarch" data-role="monarchBtn" aria-label="Monarch">♛</button><button class="badge-btn initiative" data-role="initiativeBtn" aria-label="Initiative">⚔</button><div class="name" data-role="name" contenteditable="false">Player 4</div><div class="life-row"><button class="life-btn minus" data-role="minus" aria-label="Lose life">−</button><div class="life-total" data-role="life">40</div><button class="life-btn plus" data-role="plus" aria-label="Gain life">+</button></div><button class="dmg-btn" data-role="dmgOpen">Commander damage</button><div class="counter tax standalone-counter"><button class="cbtn" data-role="taxMinus">−</button><span class="clabel">Tax</span><span class="cval" data-role="taxVal">0</span><button class="cbtn" data-role="taxPlus">+</button></div><button class="expand-toggle" data-role="expandToggle"><span class="toggle-label" data-role="expandToggle">More counters</span><span class="chevron" data-role="expandToggle">▾</span></button><div class="extra-wrap" data-role="extraWrap"><div class="extra-inner"><div class="subrow"><div class="counter poison" data-role="poisonBox"><button class="cbtn" data-role="poisonMinus">−</button><span class="clabel">Poison</span><span class="cval" data-role="poisonVal">0</span><button class="cbtn" data-role="poisonPlus">+</button></div><div class="counter storm"><button class="cbtn" data-role="stormMinus">−</button><span class="clabel">Storm</span><span class="cval" data-role="stormVal">0</span><button class="cbtn" data-role="stormPlus">+</button></div></div><div class="mana-column"><div class="counter mana" style="--mcolor:#E8DFC8"><button class="cbtn" data-role="manaMinus" data-mana="W">−</button><span class="clabel">W</span><span class="cval" data-role="manaVal" data-mana="W">0</span><button class="cbtn" data-role="manaPlus" data-mana="W">+</button></div><div class="counter mana" style="--mcolor:#4F83C4"><button class="cbtn" data-role="manaMinus" data-mana="U">−</button><span class="clabel">U</span><span class="cval" data-role="manaVal" data-mana="U">0</span><button class="cbtn" data-role="manaPlus" data-mana="U">+</button></div><div class="counter mana" style="--mcolor:#6B5B73"><button class="cbtn" data-role="manaMinus" data-mana="B">−</button><span class="clabel">B</span><span class="cval" data-role="manaVal" data-mana="B">0</span><button class="cbtn" data-role="manaPlus" data-mana="B">+</button></div><div class="counter mana" style="--mcolor:#C0503A"><button class="cbtn" data-role="manaMinus" data-mana="R">−</button><span class="clabel">R</span><span class="cval" data-role="manaVal" data-mana="R">0</span><button class="cbtn" data-role="manaPlus" data-mana="R">+</button></div><div class="counter mana" style="--mcolor:#4C8065"><button class="cbtn" data-role="manaMinus" data-mana="G">−</button><span class="clabel">G</span><span class="cval" data-role="manaVal" data-mana="G">0</span><button class="cbtn" data-role="manaPlus" data-mana="G">+</button></div><div class="counter mana" style="--mcolor:#8A8A8A"><button class="cbtn" data-role="manaMinus" data-mana="C">−</button><span class="clabel">C</span><span class="cval" data-role="manaVal" data-mana="C">0</span><button class="cbtn" data-role="manaPlus" data-mana="C">+</button></div></div><div class="counter custom-counter"><button class="cbtn" data-role="customMinus">−</button><span class="custom-label" data-role="customLabel" contenteditable="false">Counter</span><span class="cval" data-role="customVal">0</span><button class="cbtn" data-role="customPlus">+</button></div><button class="dmg-btn" data-role="randomOpp">Random opponent</button></div></div></div></div><div class="seat" data-color="3" data-seat="3"><div class="panel"><button class="badge-btn monarch" data-role="monarchBtn" aria-label="Monarch">♛</button><button class="badge-btn initiative" data-role="initiativeBtn" aria-label="Initiative">⚔</button><div class="name" data-role="name" contenteditable="false">Player 3</div><div class="life-row"><button class="life-btn minus" data-role="minus" aria-label="Lose life">−</button><div class="life-total" data-role="life">40</div><button class="life-btn plus" data-role="plus" aria-label="Gain life">+</button></div><button class="dmg-btn" data-role="dmgOpen">Commander damage</button><div class="counter tax standalone-counter"><button class="cbtn" data-role="taxMinus">−</button><span class="clabel">Tax</span><span class="cval" data-role="taxVal">0</span><button class="cbtn" data-role="taxPlus">+</button></div><button class="expand-toggle" data-role="expandToggle"><span class="toggle-label" data-role="expandToggle">More counters</span><span class="chevron" data-role="expandToggle">▾</span></button><div class="extra-wrap" data-role="extraWrap"><div class="extra-inner"><div class="subrow"><div class="counter poison" data-role="poisonBox"><button class="cbtn" data-role="poisonMinus">−</button><span class="clabel">Poison</span><span class="cval" data-role="poisonVal">0</span><button class="cbtn" data-role="poisonPlus">+</button></div><div class="counter storm"><button class="cbtn" data-role="stormMinus">−</button><span class="clabel">Storm</span><span class="cval" data-role="stormVal">0</span><button class="cbtn" data-role="stormPlus">+</button></div></div><div class="mana-column"><div class="counter mana" style="--mcolor:#E8DFC8"><button class="cbtn" data-role="manaMinus" data-mana="W">−</button><span class="clabel">W</span><span class="cval" data-role="manaVal" data-mana="W">0</span><button class="cbtn" data-role="manaPlus" data-mana="W">+</button></div><div class="counter mana" style="--mcolor:#4F83C4"><button class="cbtn" data-role="manaMinus" data-mana="U">−</button><span class="clabel">U</span><span class="cval" data-role="manaVal" data-mana="U">0</span><button class="cbtn" data-role="manaPlus" data-mana="U">+</button></div><div class="counter mana" style="--mcolor:#6B5B73"><button class="cbtn" data-role="manaMinus" data-mana="B">−</button><span class="clabel">B</span><span class="cval" data-role="manaVal" data-mana="B">0</span><button class="cbtn" data-role="manaPlus" data-mana="B">+</button></div><div class="counter mana" style="--mcolor:#C0503A"><button class="cbtn" data-role="manaMinus" data-mana="R">−</button><span class="clabel">R</span><span class="cval" data-role="manaVal" data-mana="R">0</span><button class="cbtn" data-role="manaPlus" data-mana="R">+</button></div><div class="counter mana" style="--mcolor:#4C8065"><button class="cbtn" data-role="manaMinus" data-mana="G">−</button><span class="clabel">G</span><span class="cval" data-role="manaVal" data-mana="G">0</span><button class="cbtn" data-role="manaPlus" data-mana="G">+</button></div><div class="counter mana" style="--mcolor:#8A8A8A"><button class="cbtn" data-role="manaMinus" data-mana="C">−</button><span class="clabel">C</span><span class="cval" data-role="manaVal" data-mana="C">0</span><button class="cbtn" data-role="manaPlus" data-mana="C">+</button></div></div><div class="counter custom-counter"><button class="cbtn" data-role="customMinus">−</button><span class="custom-label" data-role="customLabel" contenteditable="false">Counter</span><span class="cval" data-role="customVal">0</span><button class="cbtn" data-role="customPlus">+</button></div><button class="dmg-btn" data-role="randomOpp">Random opponent</button></div></div></div></div></div>
+  <div class="disk-backdrop" id="diskBackdrop"></div>
+  <div class="disk" id="disk">
+    <svg class="disk-svg disk-bezel" viewBox="0 0 200 200">
+      <defs>
+        <radialgradient id="q1Grad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="95">
+          <stop offset="0%" stop-color="#F06A3A"></stop>
+          <stop offset="55%" stop-color="#C1502E"></stop>
+          <stop offset="100%" stop-color="var(--p1-dim)"></stop>
+        </radialgradient>
+        <radialgradient id="q2Grad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="95">
+          <stop offset="0%" stop-color="#63BE8E"></stop>
+          <stop offset="55%" stop-color="#4C8065"></stop>
+          <stop offset="100%" stop-color="var(--p2-dim)"></stop>
+        </radialgradient>
+        <radialgradient id="q3Grad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="95">
+          <stop offset="0%" stop-color="#4FA0D6"></stop>
+          <stop offset="55%" stop-color="#3E6E93"></stop>
+          <stop offset="100%" stop-color="var(--p3-dim)"></stop>
+        </radialgradient>
+        <radialgradient id="q4Grad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="95">
+          <stop offset="0%" stop-color="#A97FD6"></stop>
+          <stop offset="55%" stop-color="#8564A8"></stop>
+          <stop offset="100%" stop-color="var(--p4-dim)"></stop>
+        </radialgradient>
+        <radialgradient id="q5Grad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="95">
+          <stop offset="0%" stop-color="#CC7BA3"></stop>
+          <stop offset="55%" stop-color="#A8547E"></stop>
+          <stop offset="100%" stop-color="var(--p5-dim)"></stop>
+        </radialgradient>
+        <radialgradient id="q6Grad" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="95">
+          <stop offset="0%" stop-color="#5FBDAF"></stop>
+          <stop offset="55%" stop-color="#3E8F82"></stop>
+          <stop offset="100%" stop-color="var(--p6-dim)"></stop>
+        </radialgradient>
+        <radialgradient id="gem" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#FCE7B8"></stop>
+          <stop offset="55%" stop-color="var(--gold)"></stop>
+          <stop offset="100%" stop-color="#8A6423"></stop>
+        </radialgradient>
+      </defs>
+      <circle class="disk-rim-outer" cx="100" cy="100" r="95"></circle>
+      <g id="diskWedges"><path d="M100,100 L5.00,100.00 A95,95 0 0,1 100.00,5.00 Z" fill="url(#q1Grad)"></path><path d="M100,100 L100.00,5.00 A95,95 0 0,1 195.00,100.00 Z" fill="url(#q2Grad)"></path><path d="M100,100 L195.00,100.00 A95,95 0 0,1 100.00,195.00 Z" fill="url(#q3Grad)"></path><path d="M100,100 L100.00,195.00 A95,95 0 0,1 5.00,100.00 Z" fill="url(#q4Grad)"></path></g>
+      <circle class="disk-rim-gold" cx="100" cy="100" r="95"></circle>
+      <circle class="disk-orbit" cx="100" cy="100" r="76"></circle>
+      <g id="diskDividers"><line class="disk-divider" x1="100" y1="100" x2="5.00" y2="100.00"></line><line class="disk-divider" x1="100" y1="100" x2="100.00" y2="5.00"></line><line class="disk-divider" x1="100" y1="100" x2="195.00" y2="100.00"></line><line class="disk-divider" x1="100" y1="100" x2="100.00" y2="195.00"></line></g>
+      <g id="diskTicks"><line class="disk-tick" x1="16.0" y1="100.0" x2="5.0" y2="100.0" stroke-width="1.6"></line><line class="disk-tick" x1="15.0" y1="77.2" x2="8.2" y2="75.4" stroke-width="0.8"></line><line class="disk-tick" x1="23.8" y1="56.0" x2="17.7" y2="52.5" stroke-width="0.8"></line><line class="disk-tick" x1="37.8" y1="37.8" x2="32.8" y2="32.8" stroke-width="0.8"></line><line class="disk-tick" x1="56.0" y1="23.8" x2="52.5" y2="17.7" stroke-width="0.8"></line><line class="disk-tick" x1="77.2" y1="15.0" x2="75.4" y2="8.2" stroke-width="0.8"></line><line class="disk-tick" x1="100.0" y1="16.0" x2="100.0" y2="5.0" stroke-width="1.6"></line><line class="disk-tick" x1="122.8" y1="15.0" x2="124.6" y2="8.2" stroke-width="0.8"></line><line class="disk-tick" x1="144.0" y1="23.8" x2="147.5" y2="17.7" stroke-width="0.8"></line><line class="disk-tick" x1="162.2" y1="37.8" x2="167.2" y2="32.8" stroke-width="0.8"></line><line class="disk-tick" x1="176.2" y1="56.0" x2="182.3" y2="52.5" stroke-width="0.8"></line><line class="disk-tick" x1="185.0" y1="77.2" x2="191.8" y2="75.4" stroke-width="0.8"></line><line class="disk-tick" x1="184.0" y1="100.0" x2="195.0" y2="100.0" stroke-width="1.6"></line><line class="disk-tick" x1="185.0" y1="122.8" x2="191.8" y2="124.6" stroke-width="0.8"></line><line class="disk-tick" x1="176.2" y1="144.0" x2="182.3" y2="147.5" stroke-width="0.8"></line><line class="disk-tick" x1="162.2" y1="162.2" x2="167.2" y2="167.2" stroke-width="0.8"></line><line class="disk-tick" x1="144.0" y1="176.2" x2="147.5" y2="182.3" stroke-width="0.8"></line><line class="disk-tick" x1="122.8" y1="185.0" x2="124.6" y2="191.8" stroke-width="0.8"></line><line class="disk-tick" x1="100.0" y1="184.0" x2="100.0" y2="195.0" stroke-width="1.6"></line><line class="disk-tick" x1="77.2" y1="185.0" x2="75.4" y2="191.8" stroke-width="0.8"></line><line class="disk-tick" x1="56.0" y1="176.2" x2="52.5" y2="182.3" stroke-width="0.8"></line><line class="disk-tick" x1="37.8" y1="162.2" x2="32.8" y2="167.2" stroke-width="0.8"></line><line class="disk-tick" x1="23.8" y1="144.0" x2="17.7" y2="147.5" stroke-width="0.8"></line><line class="disk-tick" x1="15.0" y1="122.8" x2="8.2" y2="124.6" stroke-width="0.8"></line></g>
+      <circle class="disk-medallion-ring" cx="100" cy="100" r="17"></circle>
+      <path class="disk-medallion-star" d="M100,86 L104,96 L114,100 L104,104 L100,114 L96,104 L86,100 L96,96 Z"></path>
+      <circle class="disk-gem" cx="100" cy="100" r="4.5"></circle>
+    </svg>
+    <div class="disk-needle-wrap" id="diskNeedleWrap">
+      <svg class="disk-svg" viewBox="0 0 200 200">
+        <defs>
+          <lineargradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#8C8A82"></stop>
+            <stop offset="50%" stop-color="var(--bone)"></stop>
+            <stop offset="100%" stop-color="#8C8A82"></stop>
+          </lineargradient>
+        </defs>
+        <path d="M100,10 L105,58 L100,100 L95,58 Z" fill="url(#needleGrad)"></path>
+        <path d="M100,100 L104,122 L100,133 L96,122 Z" fill="var(--gold)"></path>
+        <circle cx="100" cy="133" r="2.6" fill="var(--gold)"></circle>
+      </svg>
+    </div>
+    <div class="disk-result" id="diskResult"></div>
+  </div>
+  <div class="hub" id="hub">
+    <div class="hub-btns">
+      <button class="hub-btn icon-reset" id="resetBtn" aria-label="Reset game"></button>
+      <button class="hub-btn icon-dice" id="firstPlayerBtn" aria-label="Randomize first player"></button>
+      <button class="hub-btn icon-gear" id="settingsBtn" aria-label="Settings"></button>
+    </div>
+  </div>
+  <div class="dungeon-backdrop" id="dungeonBackdrop"></div>
+  <div class="dungeon-window" id="dungeonWindow">
+    <button class="close-x" data-role="dungeonClose">×</button>
+    <h3 id="dungeonTitle">Undercity</h3>
+    <p class="dsub">Tap any room to see what it does. Glowing rooms are your next choice.</p>
+    <div class="dungeon-tip" id="dungeonTip">
+      <span class="tip-name tip-placeholder" id="tipName">No room selected</span>
+      <span class="tip-text" id="tipText">Tap a room below to see what it does.</span>
+    </div>
+    <div class="dungeon-map" id="dungeonMap"></div>
+    <p class="dungeon-complete">Dungeon complete</p>
+    <div class="dungeon-actions">
+      <button class="btn" id="dungeonResetBtn">Reset dungeon</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="dmgOverlay">
+  <div class="card rel">
+    <button class="close-x" data-close="dmgOverlay">×</button>
+    <h2 id="dmgTitle">Commander damage</h2>
+    <p class="sub">Damage taken from each opponent’s commander. 21 or more from a single commander is lethal. Turn on Partner if that opponent has two commanders.</p>
+    <div id="dmgRows"></div>
+    <div class="row-actions">
+      <button class="btn primary" data-close="dmgOverlay">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="settingsOverlay">
+  <div class="card rel">
+    <button class="close-x" data-close="settingsOverlay">×</button>
+    <h2>Settings</h2>
+    <p class="sub">Life starts at 40. Changing player count takes effect next time you press Reset.</p>
+    <div class="settings-group">
+      <span class="glabel">Player count</span>
+      <div class="life-options" id="countOptions">
+        <button class="life-opt" data-count="2">2</button>
+        <button class="life-opt" data-count="3">3</button>
+        <button class="life-opt active" data-count="4">4</button>
+        <button class="life-opt" data-count="5">5</button>
+        <button class="life-opt" data-count="6">6</button>
+      </div>
+    </div>
+    <div class="row-actions">
+      <button class="btn primary" data-close="settingsOverlay">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="resetOverlay">
+  <div class="card rel" style="width:min(360px,88vw);">
+    <h2>Start new game?</h2>
+    <p class="sub">This resets every player’s life, poison, commander tax and commander damage, and rebuilds the table for the selected player count.</p>
+    <div class="row-actions">
+      <button class="btn" data-close="resetOverlay">Cancel</button>
+      <button class="btn danger" id="confirmReset">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var COLORS = {1:'#C1502E',2:'#4C8065',3:'#3E6E93',4:'#8564A8',5:'#A8547E',6:'#3E8F82'};
+  function mkDmg(){ return {a:0, b:0, partner:false}; }
+  var MANA_TYPES = [
+    {key:'W', color:'#E8DFC8'},
+    {key:'U', color:'#4F83C4'},
+    {key:'B', color:'#6B5B73'},
+    {key:'R', color:'#C0503A'},
+    {key:'G', color:'#4C8065'},
+    {key:'C', color:'#8A8A8A'}
+  ];
+  function mkMana(){ return {W:0,U:0,B:0,R:0,G:0,C:0}; }
+  var ROOM_GRAPH = {
+    entrance: ['forge','lostwell'],
+    forge: ['trap','arena'],
+    lostwell: ['arena','stash'],
+    trap: ['archives'],
+    arena: ['archives','catacombs'],
+    stash: ['catacombs'],
+    archives: ['throne'],
+    catacombs: ['throne'],
+    throne: []
+  };
+  var ROOM_LABELS = {
+    entrance:'Secret Entrance', forge:'Forge', lostwell:'Lost Well',
+    trap:'Trap!', arena:'Arena', stash:'Stash',
+    archives:'Archives', catacombs:'Catacombs', throne:'Throne of the Dead Three'
+  };
+  var ROOM_TEXT = {
+    entrance:'Search your library for a basic land card, reveal it, put it into your hand, then shuffle.',
+    forge:'Put two +1/+1 counters on target creature.',
+    lostwell:'Scry 2.',
+    trap:'Target player loses 5 life.',
+    arena:'Goad target creature.',
+    stash:'Create a Treasure token.',
+    archives:'Draw a card.',
+    catacombs:'Create a 4/1 black Skeleton creature token with menace.',
+    throne:'Reveal the top ten cards of your library. Put a creature card from among them onto the battlefield with three +1/+1 counters on it. It gains hexproof until your next turn. Then shuffle.'
+  };
+  var ROOM_LEVELS = [['entrance'], ['forge','lostwell'], ['trap','arena','stash'], ['archives','catacombs'], ['throne']];
+
+  function createDefaultPlayer(id, n){
+    var dmg = {};
+    for(var i = 1; i <= n; i++){ if(i !== id) dmg[i] = mkDmg(); }
+    return {
+      id:id, name:'Player ' + id, life:state.startingLife, poison:0, tax:0, storm:0,
+      mana:mkMana(), customCounter:{name:'Counter', value:0}, dmg:dmg, dungeonPath:[]
+    };
+  }
+
+  var state = {
+    startingLife: 40,
+    playerCount: 4,
+    monarch: null,
+    initiative: null,
+    players: []
+  };
+
+  var board = document.getElementById('board');
+  var topRow = document.getElementById('topRow');
+  var bottomRow = document.getElementById('bottomRow');
+
+  function manaRowHTML(m){
+    return (
+      '<div class="counter mana" style="--mcolor:' + m.color + '">' +
+        '<button class="cbtn" data-role="manaMinus" data-mana="' + m.key + '">&#8722;</button>' +
+        '<span class="clabel">' + m.key + '</span>' +
+        '<span class="cval" data-role="manaVal" data-mana="' + m.key + '">0</span>' +
+        '<button class="cbtn" data-role="manaPlus" data-mana="' + m.key + '">+</button>' +
+      '</div>'
+    );
+  }
+
+  function buildSeat(p, flip){
+    var seat = document.createElement('div');
+    seat.className = 'seat' + (flip ? ' flip' : '');
+    seat.dataset.color = p.id;
+    seat.dataset.seat = p.id;
+    seat.innerHTML =
+      '<div class="panel">' +
+        '<button class="badge-btn monarch" data-role="monarchBtn" aria-label="Monarch">&#9819;</button>' +
+        '<button class="badge-btn initiative" data-role="initiativeBtn" aria-label="Initiative">&#9876;</button>' +
+        '<div class="name" data-role="name" contenteditable="false">' + p.name + '</div>' +
+        '<div class="life-row">' +
+          '<button class="life-btn minus" data-role="minus" aria-label="Lose life">&#8722;</button>' +
+          '<div class="life-total" data-role="life">' + p.life + '</div>' +
+          '<button class="life-btn plus" data-role="plus" aria-label="Gain life">+</button>' +
+        '</div>' +
+        '<button class="dmg-btn" data-role="dmgOpen">Commander damage</button>' +
+        '<div class="counter tax standalone-counter">' +
+          '<button class="cbtn" data-role="taxMinus">&#8722;</button>' +
+          '<span class="clabel">Tax</span>' +
+          '<span class="cval" data-role="taxVal">0</span>' +
+          '<button class="cbtn" data-role="taxPlus">+</button>' +
+        '</div>' +
+        '<button class="expand-toggle" data-role="expandToggle">' +
+          '<span class="toggle-label" data-role="expandToggle">More counters</span><span class="chevron" data-role="expandToggle">&#9662;</span>' +
+        '</button>' +
+        '<div class="extra-wrap" data-role="extraWrap">' +
+          '<div class="extra-inner">' +
+            '<div class="subrow">' +
+              '<div class="counter poison" data-role="poisonBox">' +
+                '<button class="cbtn" data-role="poisonMinus">&#8722;</button>' +
+                '<span class="clabel">Poison</span>' +
+                '<span class="cval" data-role="poisonVal">0</span>' +
+                '<button class="cbtn" data-role="poisonPlus">+</button>' +
+              '</div>' +
+              '<div class="counter storm">' +
+                '<button class="cbtn" data-role="stormMinus">&#8722;</button>' +
+                '<span class="clabel">Storm</span>' +
+                '<span class="cval" data-role="stormVal">0</span>' +
+                '<button class="cbtn" data-role="stormPlus">+</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="mana-column">' +
+              MANA_TYPES.map(manaRowHTML).join('') +
+            '</div>' +
+            '<div class="counter custom-counter">' +
+              '<button class="cbtn" data-role="customMinus">&#8722;</button>' +
+              '<span class="custom-label" data-role="customLabel" contenteditable="false">' + p.customCounter.name + '</span>' +
+              '<span class="cval" data-role="customVal">0</span>' +
+              '<button class="cbtn" data-role="customPlus">+</button>' +
+            '</div>' +
+            '<button class="dmg-btn" data-role="randomOpp">Random opponent</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    return seat;
+  }
+
+  function rebuildBoard(n){
+    var carry = {};
+    state.players.forEach(function(p){
+      carry[p.id] = {name: p.name, counterName: p.customCounter.name};
+    });
+    state.players = [];
+    for(var i = 1; i <= n; i++){
+      var fresh = createDefaultPlayer(i, n);
+      if(carry[i]){
+        fresh.name = carry[i].name;
+        fresh.customCounter.name = carry[i].counterName;
+      }
+      state.players.push(fresh);
+    }
+    state.monarch = null;
+    state.initiative = null;
+    if(typeof closeDungeonWindow === 'function') closeDungeonWindow();
+    if(oppPickTimer){ clearInterval(oppPickTimer); oppPickTimer = null; }
+    clearTimeout(oppHighlightTimer);
+    topRow.innerHTML = '';
+    bottomRow.innerHTML = '';
+    var topCount = Math.floor(n / 2);
+    for(var t = 1; t <= topCount; t++){
+      topRow.appendChild(buildSeat(state.players[t - 1], true));
+    }
+    for(var b = n; b > topCount; b--){
+      bottomRow.appendChild(buildSeat(state.players[b - 1], false));
+    }
+    attachLifeHold();
+    if(typeof buildDisk === 'function') buildDisk(n);
+    refreshAll();
+  }
+
+  function attachLifeHold(){
+    board.querySelectorAll('.seat').forEach(function(seatEl_){
+      var id = parseInt(seatEl_.dataset.seat, 10);
+      attachHold(seatEl_.querySelector('[data-role="plus"]'), function(){ changeLife(id, 1); });
+      attachHold(seatEl_.querySelector('[data-role="minus"]'), function(){ changeLife(id, -1); });
+    });
+  }
+
+  function getPlayer(id){
+    return state.players.find(function(p){ return p.id === id; });
+  }
+
+  function seatEl(id){
+    return board.querySelector('.seat[data-seat="' + id + '"]');
+  }
+
+  function refreshSeat(id){
+    var p = getPlayer(id);
+    var el = seatEl(id);
+    if(!el) return;
+    el.querySelector('[data-role="life"]').textContent = p.life;
+    el.querySelector('[data-role="life"]').classList.toggle('negative', p.life < 0);
+    el.querySelector('[data-role="poisonVal"]').textContent = p.poison;
+    el.querySelector('[data-role="taxVal"]').textContent = p.tax;
+    el.querySelector('[data-role="stormVal"]').textContent = p.storm;
+    MANA_TYPES.forEach(function(m){
+      var valEl = el.querySelector('.cval[data-role="manaVal"][data-mana="' + m.key + '"]');
+      if(valEl) valEl.textContent = p.mana[m.key];
+    });
+    el.querySelector('[data-role="customVal"]').textContent = p.customCounter.value;
+    var pbox = el.querySelector('[data-role="poisonBox"]');
+    pbox.classList.toggle('hot', p.poison >= 10);
+    el.querySelector('[data-role="expandToggle"]').classList.toggle('warn', p.poison >= 7);
+    var totalDmg = 0;
+    Object.keys(p.dmg).forEach(function(k){
+      var src = p.dmg[k];
+      totalDmg += src.a + src.b;
+    });
+    el.querySelector('[data-role="dmgOpen"]').classList.toggle('has-dmg', totalDmg > 0);
+    el.querySelector('[data-role="monarchBtn"]').classList.toggle('active', state.monarch === id);
+    el.querySelector('[data-role="initiativeBtn"]').classList.toggle('active', state.initiative === id);
+  }
+
+  function refreshAll(){
+    state.players.forEach(function(p){ refreshSeat(p.id); });
+  }
+
+  function flashLife(id, dir){
+    var el = seatEl(id).querySelector('[data-role="life"]');
+    el.classList.remove('pulse-up','pulse-down');
+    void el.offsetWidth;
+    el.classList.add(dir > 0 ? 'pulse-up' : 'pulse-down');
+  }
+
+  function changeLife(id, delta){
+    var p = getPlayer(id);
+    p.life += delta;
+    flashLife(id, delta);
+    refreshSeat(id);
+  }
+
+  function changePoison(id, delta){
+    var p = getPlayer(id);
+    p.poison = Math.max(0, p.poison + delta);
+    refreshSeat(id);
+  }
+
+  function changeTax(id, delta){
+    var p = getPlayer(id);
+    p.tax = Math.max(0, p.tax + delta);
+    refreshSeat(id);
+  }
+
+  function changeStorm(id, delta){
+    var p = getPlayer(id);
+    p.storm = Math.max(0, p.storm + delta);
+    refreshSeat(id);
+  }
+
+  function changeMana(id, key, delta){
+    var p = getPlayer(id);
+    p.mana[key] = Math.max(0, p.mana[key] + delta);
+    refreshSeat(id);
+  }
+
+  function changeCustom(id, delta){
+    var p = getPlayer(id);
+    p.customCounter.value = Math.max(0, p.customCounter.value + delta);
+    refreshSeat(id);
+  }
+
+  function attachHold(el, onStep){
+    var timer = null, interval = null, delay = 420, speed = 150;
+    function start(e){
+      e.preventDefault();
+      onStep();
+      timer = setTimeout(function(){
+        interval = setInterval(onStep, speed);
+      }, delay);
+    }
+    function stop(){
+      clearTimeout(timer); clearInterval(interval);
+      timer = null; interval = null;
+    }
+    el.addEventListener('pointerdown', start);
+    el.addEventListener('pointerup', stop);
+    el.addEventListener('pointerleave', stop);
+    el.addEventListener('pointercancel', stop);
+  }
+
+  function editLifeInline(id){
+    var el = seatEl(id).querySelector('[data-role="life"]');
+    var p = getPlayer(id);
+    var input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'life-input';
+    input.value = p.life;
+    el.replaceWith(input);
+    input.focus();
+    input.select();
+    function commit(){
+      var v = parseInt(input.value, 10);
+      p.life = isNaN(v) ? p.life : v;
+      input.replaceWith(el);
+      refreshSeat(id);
+    }
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter') input.blur();
+    });
+  }
+
+  function editName(id){
+    var nameEl = seatEl(id).querySelector('[data-role="name"]');
+    nameEl.contentEditable = 'true';
+    nameEl.focus();
+    document.execCommand && document.execCommand('selectAll', false, null);
+    function commit(){
+      nameEl.contentEditable = 'false';
+      var p = getPlayer(id);
+      var txt = nameEl.textContent.trim().slice(0, 20) || p.name;
+      p.name = txt;
+      nameEl.textContent = txt;
+    }
+    nameEl.addEventListener('blur', commit, {once:true});
+    nameEl.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); nameEl.blur(); }
+    }, {once:true});
+  }
+
+  function editCustomLabel(id){
+    var labelEl = seatEl(id).querySelector('[data-role="customLabel"]');
+    labelEl.contentEditable = 'true';
+    labelEl.focus();
+    document.execCommand && document.execCommand('selectAll', false, null);
+    function commit(){
+      labelEl.contentEditable = 'false';
+      var p = getPlayer(id);
+      var txt = labelEl.textContent.trim().slice(0, 14) || p.customCounter.name || 'Counter';
+      p.customCounter.name = txt;
+      labelEl.textContent = txt;
+    }
+    labelEl.addEventListener('blur', commit, {once:true});
+    labelEl.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); labelEl.blur(); }
+    }, {once:true});
+  }
+
+  board.addEventListener('click', function(e){
+    var seatEl_ = e.target.closest('.seat');
+    if(!seatEl_) return;
+    var id = parseInt(seatEl_.dataset.seat, 10);
+    var role = e.target.dataset.role;
+    if(role === 'name'){ editName(id); }
+    if(role === 'life'){ editLifeInline(id); }
+    if(role === 'poisonMinus'){ changePoison(id, -1); }
+    if(role === 'poisonPlus'){ changePoison(id, 1); }
+    if(role === 'taxMinus'){ changeTax(id, -2); }
+    if(role === 'taxPlus'){ changeTax(id, 2); }
+    if(role === 'stormMinus'){ changeStorm(id, -1); }
+    if(role === 'stormPlus'){ changeStorm(id, 1); }
+    if(role === 'manaMinus'){ changeMana(id, e.target.dataset.mana, -1); }
+    if(role === 'manaPlus'){ changeMana(id, e.target.dataset.mana, 1); }
+    if(role === 'customMinus'){ changeCustom(id, -1); }
+    if(role === 'customPlus'){ changeCustom(id, 1); }
+    if(role === 'customLabel'){ editCustomLabel(id); }
+    if(role === 'dmgOpen'){ openDmg(id); }
+    if(role === 'randomOpp'){ pickRandomOpponent(id); }
+    if(role === 'expandToggle'){ toggleExtra(id); }
+    if(role === 'monarchBtn'){ toggleMonarch(id); }
+    if(role === 'initiativeBtn'){ setInitiative(id); }
+  });
+
+  var dmgOverlay = document.getElementById('dmgOverlay');
+  var dmgRows = document.getElementById('dmgRows');
+  var dmgTitle = document.getElementById('dmgTitle');
+
+  function updateDmgRowDisplay(id, oppId){
+    var p = getPlayer(id);
+    var d = p.dmg[oppId];
+    var row = dmgRows.querySelector('.dmg-row[data-opp="' + oppId + '"]');
+    if(!row) return;
+    row.classList.toggle('has-partner', d.partner);
+    var toggleBtn = row.querySelector('[data-role="partnerToggle"]');
+    toggleBtn.classList.toggle('active', d.partner);
+    toggleBtn.textContent = d.partner ? 'Partner: on' : 'Partner';
+    row.querySelector('[data-role="label-a"]').textContent = d.partner ? 'Commander A' : 'Commander damage';
+    ['a','b'].forEach(function(src){
+      var val = d[src];
+      var lethal = val >= 21;
+      row.querySelector('[data-role="dval-' + src + '"]').textContent = val;
+      row.querySelector('[data-role="source-' + src + '"]').classList.toggle('lethal', lethal);
+      row.querySelector('[data-role="lethalTag-' + src + '"]').style.display = lethal ? 'inline-block' : 'none';
+    });
+  }
+
+  function stepDmg(id, oppId, src, delta){
+    var p = getPlayer(id);
+    var d = p.dmg[oppId];
+    d[src] = Math.max(0, d[src] + delta);
+    updateDmgRowDisplay(id, oppId);
+    refreshSeat(id);
+  }
+
+  function togglePartner(id, oppId){
+    var p = getPlayer(id);
+    p.dmg[oppId].partner = !p.dmg[oppId].partner;
+    updateDmgRowDisplay(id, oppId);
+    refreshSeat(id);
+  }
+
+  function dmgSourceHTML(src, label){
+    return (
+      '<div class="dmg-source" data-role="source-' + src + '">' +
+        '<span class="src-label" data-role="label-' + src + '">' + label + '</span>' +
+        '<button class="dbtn" data-op="minus">&#8722;</button>' +
+        '<span class="dval" data-role="dval-' + src + '">0</span>' +
+        '<button class="dbtn" data-op="plus">+</button>' +
+        '<span class="lethal-tag" data-role="lethalTag-' + src + '" style="display:none;">LETHAL</span>' +
+      '</div>'
+    );
+  }
+
+  function openDmg(id){
+    var p = getPlayer(id);
+    dmgTitle.textContent = p.name + ' \u2014 commander damage';
+    dmgRows.innerHTML = '';
+    state.players.filter(function(o){ return o.id !== id; }).forEach(function(o){
+      var row = document.createElement('div');
+      row.className = 'dmg-row';
+      row.dataset.opp = o.id;
+      row.innerHTML =
+        '<div class="dmg-row-head">' +
+          '<div class="dot" style="background:' + COLORS[o.id] + '"></div>' +
+          '<div class="dname">' + o.name + '</div>' +
+          '<button class="partner-toggle" data-role="partnerToggle">Partner</button>' +
+        '</div>' +
+        '<div class="dmg-sources">' +
+          dmgSourceHTML('a', 'Commander damage') +
+          dmgSourceHTML('b', 'Commander B') +
+        '</div>';
+      row.querySelector('[data-role="partnerToggle"]').addEventListener('click', function(){
+        togglePartner(id, o.id);
+      });
+      ['a','b'].forEach(function(src){
+        var srcEl = row.querySelector('[data-role="source-' + src + '"]');
+        var minusBtn = srcEl.querySelector('[data-op="minus"]');
+        var plusBtn = srcEl.querySelector('[data-op="plus"]');
+        attachHold(minusBtn, function(){ stepDmg(id, o.id, src, -1); });
+        attachHold(plusBtn, function(){ stepDmg(id, o.id, src, 1); });
+      });
+      dmgRows.appendChild(row);
+      updateDmgRowDisplay(id, o.id);
+    });
+    dmgOverlay.classList.add('open');
+    refreshSeat(id);
+  }
+
+  document.querySelectorAll('[data-close]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.getElementById(btn.dataset.close).classList.remove('open');
+      refreshAll();
+    });
+  });
+
+  var settingsOverlay = document.getElementById('settingsOverlay');
+  document.getElementById('settingsBtn').addEventListener('click', function(){
+    settingsOverlay.classList.add('open');
+  });
+  document.querySelectorAll('#countOptions .life-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#countOptions .life-opt').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.playerCount = parseInt(btn.dataset.count, 10);
+    });
+  });
+
+  var resetOverlay = document.getElementById('resetOverlay');
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    resetOverlay.classList.add('open');
+  });
+  document.getElementById('confirmReset').addEventListener('click', function(){
+    rebuildBoard(state.playerCount);
+    resetOverlay.classList.remove('open');
+  });
+
+  var disk = document.getElementById('disk');
+  var diskBackdrop = document.getElementById('diskBackdrop');
+  var diskNeedleWrap = document.getElementById('diskNeedleWrap');
+  var diskResult = document.getElementById('diskResult');
+  var diskTicksG = document.getElementById('diskTicks');
+  var diskWedgesG = document.getElementById('diskWedges');
+  var diskDividersG = document.getElementById('diskDividers');
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var diskRotation = 0;
+  var spinTimer = null, highlightTimer = null, closeTimer = null;
+
+  function polar(cx, cy, r, deg){
+    var rad = (deg - 90) * Math.PI / 180;
+    return {x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad)};
+  }
+
+  var WEDGE_OFFSET = -90;
+  var WEDGE_EXTRA = {2:0, 3:30, 4:0, 5:18, 6:0};
+  function wedgeOffsetFor(n){
+    return WEDGE_OFFSET + (WEDGE_EXTRA[n] || 0);
+  }
+
+  function buildDisk(n){
+    diskWedgesG.innerHTML = '';
+    diskDividersG.innerHTML = '';
+    diskTicksG.innerHTML = '';
+    var wedgeAngle = 360 / n;
+    var offset = wedgeOffsetFor(n);
+    for(var i = 0; i < n; i++){
+      var startDeg = i * wedgeAngle + offset;
+      var endDeg = (i + 1) * wedgeAngle + offset;
+      var playerId = i + 1;
+      var startPt = polar(100, 100, 95, startDeg);
+      var endPt = polar(100, 100, 95, endDeg);
+      var largeArc = wedgeAngle > 180 ? 1 : 0;
+      var path = document.createElementNS(SVGNS, 'path');
+      path.setAttribute('d',
+        'M100,100 L' + startPt.x.toFixed(2) + ',' + startPt.y.toFixed(2) +
+        ' A95,95 0 ' + largeArc + ',1 ' + endPt.x.toFixed(2) + ',' + endPt.y.toFixed(2) + ' Z');
+      path.setAttribute('fill', 'url(#q' + playerId + 'Grad)');
+      diskWedgesG.appendChild(path);
+    }
+    for(var k = 0; k < n; k++){
+      var outer = polar(100, 100, 95, k * wedgeAngle + offset);
+      var line = document.createElementNS(SVGNS, 'line');
+      line.setAttribute('class', 'disk-divider');
+      line.setAttribute('x1', '100'); line.setAttribute('y1', '100');
+      line.setAttribute('x2', outer.x.toFixed(2)); line.setAttribute('y2', outer.y.toFixed(2));
+      diskDividersG.appendChild(line);
+    }
+    var tickStep = wedgeAngle / 6;
+    for(var deg = 0; deg < 360; deg += tickStep){
+      var isMajor = Math.round(deg / wedgeAngle) * wedgeAngle;
+      isMajor = Math.abs(deg - isMajor) < 0.01;
+      var r1 = isMajor ? 84 : 88;
+      var p1 = polar(100, 100, r1, deg + offset);
+      var p2 = polar(100, 100, 95, deg + offset);
+      var tick = document.createElementNS(SVGNS, 'line');
+      tick.setAttribute('class', 'disk-tick');
+      tick.setAttribute('x1', p1.x.toFixed(1));
+      tick.setAttribute('y1', p1.y.toFixed(1));
+      tick.setAttribute('x2', p2.x.toFixed(1));
+      tick.setAttribute('y2', p2.y.toFixed(1));
+      tick.setAttribute('stroke-width', isMajor ? '1.6' : '0.8');
+      diskTicksG.appendChild(tick);
+    }
+  }
+
+  function randomAngleForPlayer(id){
+    var n = state.players.length;
+    var wedgeAngle = 360 / n;
+    var start = (id - 1) * wedgeAngle + wedgeOffsetFor(n);
+    var pad = wedgeAngle * 0.18;
+    return start + pad + Math.random() * (wedgeAngle - pad * 2);
+  }
+
+  function spinFirstPlayer(){
+    if(spinTimer) return;
+    clearTimeout(highlightTimer); clearTimeout(closeTimer);
+    state.players.forEach(function(p){ seatEl(p.id).classList.remove('start-highlight'); });
+    disk.classList.remove('landed');
+    diskResult.classList.remove('show');
+    diskResult.textContent = '';
+    var winner = state.players[Math.floor(Math.random() * state.players.length)];
+    var targetMod = randomAngleForPlayer(winner.id);
+    var currentMod = diskRotation % 360;
+    var diff = targetMod - currentMod;
+    if(diff <= 0) diff += 360;
+    var spins = 4 + Math.floor(Math.random() * 2);
+    diskRotation += diff + spins * 360;
+    diskBackdrop.classList.add('open');
+    disk.classList.add('open');
+    diskNeedleWrap.style.transform = 'rotate(' + diskRotation + 'deg)';
+    spinTimer = setTimeout(function(){
+      spinTimer = null;
+      disk.style.setProperty('--winner-color', COLORS[winner.id]);
+      disk.classList.add('landed');
+      diskResult.textContent = winner.name + ' goes first';
+      diskResult.classList.add('show');
+      var seat = seatEl(winner.id);
+      seat.classList.add('start-highlight');
+      highlightTimer = setTimeout(function(){
+        seat.classList.remove('start-highlight');
+      }, 4000);
+      closeTimer = setTimeout(function(){
+        disk.classList.remove('open');
+        diskBackdrop.classList.remove('open');
+      }, 3200);
+    }, 2800);
+  }
+
+  document.getElementById('firstPlayerBtn').addEventListener('click', spinFirstPlayer);
+  diskBackdrop.addEventListener('click', function(){
+    if(spinTimer) return;
+    clearTimeout(closeTimer);
+    disk.classList.remove('open');
+    diskBackdrop.classList.remove('open');
+  });
+
+  function toggleExtra(id){
+    var el = seatEl(id);
+    var wrap = el.querySelector('[data-role="extraWrap"]');
+    var btn = el.querySelector('[data-role="expandToggle"]');
+    var label = el.querySelector('.toggle-label');
+    var isOpen = wrap.classList.toggle('expanded');
+    btn.classList.toggle('expanded', isOpen);
+    label.textContent = isOpen ? 'Fewer counters' : 'More counters';
+  }
+
+  var oppPickTimer = null, oppHighlightTimer = null;
+
+  function pickRandomOpponent(id){
+    if(oppPickTimer) return;
+    var btn = seatEl(id).querySelector('[data-role="randomOpp"]');
+    var candidates = state.players.filter(function(p){ return p.id !== id; });
+    if(!candidates.length) return;
+    clearTimeout(oppHighlightTimer);
+    state.players.forEach(function(p){ seatEl(p.id).classList.remove('start-highlight'); });
+    btn.disabled = true;
+    var originalText = btn.textContent;
+    btn.textContent = 'Picking\u2026';
+    var winnerIdx = Math.floor(Math.random() * candidates.length);
+    var loops = 3 + Math.floor(Math.random() * 2);
+    var totalSteps = candidates.length * loops + winnerIdx + 1;
+    var stepTime = 110;
+    var i = 0, lit = null;
+    oppPickTimer = setInterval(function(){
+      if(lit !== null) seatEl(lit).classList.remove('start-highlight');
+      var cand = candidates[i % candidates.length];
+      seatEl(cand.id).classList.add('start-highlight');
+      lit = cand.id;
+      i++;
+      if(i >= totalSteps){
+        clearInterval(oppPickTimer);
+        oppPickTimer = null;
+        btn.disabled = false;
+        btn.textContent = originalText;
+        var finalId = lit;
+        oppHighlightTimer = setTimeout(function(){
+          seatEl(finalId).classList.remove('start-highlight');
+        }, 4000);
+      }
+    }, stepTime);
+  }
+
+  function toggleMonarch(id){
+    state.monarch = (state.monarch === id) ? null : id;
+    refreshAll();
+  }
+
+  function setInitiative(id){
+    state.initiative = id;
+    refreshAll();
+    openDungeonWindow(id);
+  }
+
+  var dungeonBackdrop = document.getElementById('dungeonBackdrop');
+  var dungeonWindow = document.getElementById('dungeonWindow');
+  var dungeonTitle = document.getElementById('dungeonTitle');
+  var dungeonMap = document.getElementById('dungeonMap');
+  var tipName = document.getElementById('tipName');
+  var tipText = document.getElementById('tipText');
+  var dungeonOpenFor = null;
+  var lastTippedRoom = null;
+
+  function showRoomTip(roomKey){
+    lastTippedRoom = roomKey;
+    tipName.textContent = ROOM_LABELS[roomKey];
+    tipName.classList.remove('tip-placeholder');
+    tipText.textContent = ROOM_TEXT[roomKey];
+  }
+
+  function clearRoomTip(){
+    lastTippedRoom = null;
+    tipName.textContent = 'No room selected';
+    tipName.classList.add('tip-placeholder');
+    tipText.textContent = 'Tap a room below to see what it does.';
+  }
+
+  function renderDungeonMap(id){
+    var p = getPlayer(id);
+    dungeonWindow.style.setProperty('--dwin-accent', COLORS[id]);
+    dungeonTitle.textContent = p.name + ' \u2014 Undercity';
+    var path = p.dungeonPath;
+    var current = path.length ? path[path.length - 1] : null;
+    var nextOptions = current ? ROOM_GRAPH[current] : ['entrance'];
+    dungeonMap.innerHTML = '';
+    ROOM_LEVELS.forEach(function(level){
+      var row = document.createElement('div');
+      row.className = 'dungeon-level';
+      level.forEach(function(roomKey){
+        var btn = document.createElement('button');
+        btn.className = 'room-btn';
+        btn.textContent = ROOM_LABELS[roomKey];
+        btn.dataset.room = roomKey;
+        if(roomKey === current){
+          btn.classList.add('current');
+        } else if(nextOptions.indexOf(roomKey) !== -1){
+          btn.classList.add('available');
+        } else if(path.indexOf(roomKey) !== -1){
+          btn.classList.add('visited');
+        }
+        row.appendChild(btn);
+      });
+      dungeonMap.appendChild(row);
+    });
+    dungeonWindow.classList.toggle('done', current === 'throne');
+    if(lastTippedRoom) showRoomTip(lastTippedRoom);
+  }
+
+  function positionDungeonWindow(id){
+    var seat = seatEl(id);
+    var rect = seat.getBoundingClientRect();
+    var isFlip = seat.classList.contains('flip');
+    var w = Math.min(rect.width * 0.78, 420);
+    dungeonWindow.style.width = w + 'px';
+    dungeonWindow.style.maxHeight = (rect.height * 0.82) + 'px';
+    dungeonWindow.style.left = (rect.left + rect.width / 2 - w / 2) + 'px';
+    dungeonWindow.style.top = (rect.top + rect.height / 2) + 'px';
+    dungeonWindow.style.transform = isFlip
+      ? 'translateY(-50%) rotate(180deg) scale(1)'
+      : 'translateY(-50%) rotate(0deg) scale(1)';
+    dungeonWindow.dataset.flip = isFlip ? '1' : '0';
+  }
+
+  function openDungeonWindow(id){
+    dungeonOpenFor = id;
+    clearRoomTip();
+    renderDungeonMap(id);
+    positionDungeonWindow(id);
+    dungeonBackdrop.classList.add('open');
+    requestAnimationFrame(function(){ dungeonWindow.classList.add('open'); });
+  }
+
+  function closeDungeonWindow(){
+    dungeonOpenFor = null;
+    dungeonWindow.classList.remove('open');
+    dungeonBackdrop.classList.remove('open');
+  }
+
+  dungeonMap.addEventListener('click', function(e){
+    var btn = e.target.closest('.room-btn');
+    if(!btn || dungeonOpenFor === null) return;
+    var roomKey = btn.dataset.room;
+    showRoomTip(roomKey);
+    var p = getPlayer(dungeonOpenFor);
+    if(btn.classList.contains('available')){
+      p.dungeonPath.push(roomKey);
+      renderDungeonMap(dungeonOpenFor);
+    } else if(btn.classList.contains('current')){
+      p.dungeonPath.pop();
+      renderDungeonMap(dungeonOpenFor);
+    }
+  });
+
+  document.getElementById('dungeonResetBtn').addEventListener('click', function(){
+    if(dungeonOpenFor === null) return;
+    getPlayer(dungeonOpenFor).dungeonPath = [];
+    renderDungeonMap(dungeonOpenFor);
+  });
+
+  dungeonWindow.querySelector('[data-role="dungeonClose"]').addEventListener('click', closeDungeonWindow);
+  dungeonBackdrop.addEventListener('click', closeDungeonWindow);
+
+  window.addEventListener('resize', function(){
+    if(dungeonOpenFor !== null) positionDungeonWindow(dungeonOpenFor);
+  });
+
+  var wakeLock = null;
+  function requestWakeLock(){
+    if(!('wakeLock' in navigator)) return;
+    navigator.wakeLock.request('screen').then(function(lock){
+      wakeLock = lock;
+      wakeLock.addEventListener('release', function(){ wakeLock = null; });
+    }).catch(function(){});
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') requestWakeLock();
+  });
+  document.addEventListener('pointerdown', function firstTouch(){
+    requestWakeLock();
+    document.removeEventListener('pointerdown', firstTouch);
+  }, {once:true});
+  requestWakeLock();
+
+  rebuildBoard(state.playerCount);
+})();
+</script>
+
+
+</body></html>

@@ -120,9 +120,29 @@
   }
   .name[contenteditable="true"]{ outline:none; border:1px solid var(--accent); }
   .life-row{
+    position:relative;
     display:flex; align-items:center; justify-content:center;
     gap:clamp(10px,3vmin,28px);
   }
+  .life-delta{
+    position:absolute; top:-0.4em; left:50%;
+    transform:translate(-50%,-100%);
+    font-size:clamp(16px,3.4vmin,28px);
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.02em;
+    padding:2px 10px;
+    border-radius:999px;
+    background:#0A0B0DCC;
+    border:1px solid var(--line);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease, transform .3s ease;
+    white-space:nowrap;
+  }
+  .life-delta.show{ opacity:1; transform:translate(-50%,-130%); }
+  .life-delta.positive{ color:#8FDB9E; border-color:#8FDB9E55; }
+  .life-delta.negative{ color:var(--danger); border-color:#C2494955; }
   .life-btn{
     width:clamp(44px,9vmin,72px); height:clamp(44px,9vmin,72px);
     border-radius:50%;
@@ -698,6 +718,7 @@
           '<button class="life-btn minus" data-role="minus" aria-label="Lose life">&#8722;</button>' +
           '<div class="life-total" data-role="life">' + p.life + '</div>' +
           '<button class="life-btn plus" data-role="plus" aria-label="Gain life">+</button>' +
+          '<div class="life-delta" data-role="lifeDelta"></div>' +
         '</div>' +
         '<button class="dmg-btn" data-role="dmgOpen">Commander damage</button>' +
         '<div class="counter tax standalone-counter">' +
@@ -760,6 +781,9 @@
     if(typeof closeDungeonWindow === 'function') closeDungeonWindow();
     if(oppPickTimer){ clearInterval(oppPickTimer); oppPickTimer = null; }
     clearTimeout(oppHighlightTimer);
+    Object.keys(lifeDeltaTimers).forEach(function(k){ clearTimeout(lifeDeltaTimers[k]); });
+    lifeDeltaAccum = {};
+    lifeDeltaTimers = {};
     topRow.innerHTML = '';
     bottomRow.innerHTML = '';
     let topCount = Math.floor(n / 2);
@@ -828,10 +852,33 @@
     el.classList.add(dir > 0 ? 'pulse-up' : 'pulse-down');
   }
 
+  let lifeDeltaAccum = {};
+  let lifeDeltaTimers = {};
+
+  function bumpLifeDeltaIndicator(id, delta){
+    lifeDeltaAccum[id] = (lifeDeltaAccum[id] || 0) + delta;
+    let total = lifeDeltaAccum[id];
+    let el = seatEl(id).querySelector('[data-role="lifeDelta"]');
+    clearTimeout(lifeDeltaTimers[id]);
+    if(total === 0){
+      el.classList.remove('show');
+      return;
+    }
+    el.textContent = (total > 0 ? '+' : '') + total;
+    el.classList.toggle('positive', total > 0);
+    el.classList.toggle('negative', total < 0);
+    el.classList.add('show');
+    lifeDeltaTimers[id] = setTimeout(function(){
+      el.classList.remove('show');
+      lifeDeltaAccum[id] = 0;
+    }, 3000);
+  }
+
   function changeLife(id, delta){
     let p = getPlayer(id);
     p.life += delta;
     flashLife(id, delta);
+    bumpLifeDeltaIndicator(id, delta);
     refreshSeat(id);
   }
 
@@ -993,7 +1040,14 @@
   function stepDmg(id, oppId, src, delta){
     let p = getPlayer(id);
     let d = p.dmg[oppId];
-    d[src] = Math.max(0, d[src] + delta);
+    let oldVal = d[src];
+    d[src] = Math.max(0, oldVal + delta);
+    let applied = d[src] - oldVal;
+    if(applied !== 0){
+      p.life -= applied;
+      flashLife(id, -applied);
+      bumpLifeDeltaIndicator(id, -applied);
+    }
     updateDmgRowDisplay(id, oppId);
     refreshSeat(id);
   }

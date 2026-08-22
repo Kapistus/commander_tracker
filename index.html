@@ -1322,7 +1322,13 @@
   fullscreenBtn.addEventListener('click', function(){
     if(!document.fullscreenElement){
       if(document.documentElement.requestFullscreen){
-        document.documentElement.requestFullscreen().catch(function(){});
+        document.documentElement.requestFullscreen().catch(function(err){
+          fullscreenBtn.textContent = 'Fullscreen blocked: ' + err.name;
+          setTimeout(updateFullscreenBtnLabel, 2500);
+        });
+      } else {
+        fullscreenBtn.textContent = 'Not supported here';
+        setTimeout(updateFullscreenBtnLabel, 2500);
       }
     } else if(document.exitFullscreen){
       document.exitFullscreen();

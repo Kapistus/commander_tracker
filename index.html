@@ -94,9 +94,14 @@
     color:var(--gold);
     box-shadow:0 0 12px 1px #D9A94E70;
   }
-  .badge-btn.monarch{ bottom:6px; left:6px; font-size:clamp(17px,3.6vmin,24px); }
-  .badge-btn.initiative{ bottom:6px; right:6px; }
-  .badge-btn.monarch.active{
+  .badge-cluster{
+    position:absolute; z-index:6; bottom:6px; left:6px;
+    display:flex; gap:6px;
+  }
+  .badge-cluster .badge-btn{ position:static; }
+  .badge-btn.monarch{ font-size:clamp(17px,3.6vmin,24px); }
+  .badge-btn.dungeons{ position:absolute; bottom:6px; right:6px; }
+  .badge-btn.monarch.active, .badge-btn.initiative.active{
     background:var(--gold);
     color:#231a08;
     border-color:var(--gold);
@@ -356,63 +361,74 @@
     pointer-events:none;
     transition:opacity .22s, transform .22s;
     z-index:25;
-    overflow:auto;
+    overflow:hidden;
     color:var(--bone);
   }
   .dungeon-window.open{ opacity:1; transform:scale(1); pointer-events:auto; }
-  .dungeon-window h3{
-    margin:0 0 2px; font-size:clamp(14px,2vmin,18px); letter-spacing:.03em; font-weight:700;
-    color:var(--dwin-accent, var(--gold));
+  #dungeonInner{ transform-origin:top center; }
+  .dungeon-head{ display:flex; align-items:center; gap:6px; margin-bottom:2px; }
+  .dungeon-nav-arrow{
+    flex:none; width:clamp(24px,4.5vmin,32px); height:clamp(24px,4.5vmin,32px);
+    border-radius:50%; border:1px solid var(--line); background:#00000033;
+    color:var(--bone-dim); font-size:clamp(14px,2.6vmin,18px);
+    display:flex; align-items:center; justify-content:center;
   }
-  .dungeon-window .dsub{ color:var(--bone-dim); font-size:clamp(10px,1.4vmin,12px); margin:0 0 10px; }
+  .dungeon-nav-arrow:active{ color:var(--gold); border-color:var(--gold); }
+  .dungeon-nav-arrow.close{ margin-left:4px; color:var(--bone-dim); font-size:clamp(16px,3vmin,20px); }
+  .dungeon-nav-arrow.close:active{ color:var(--danger); border-color:var(--danger); }
+  .dungeon-window h3{
+    flex:1; margin:0; font-size:clamp(13px,2vmin,17px); letter-spacing:.03em; font-weight:700;
+    color:var(--dwin-accent, var(--gold)); text-align:center;
+  }
+  .dungeon-window .dsub{ color:var(--bone-dim); font-size:clamp(9.5px,1.35vmin,11.5px); margin:0 0 4px; text-align:center; }
+  .dungeon-access{
+    text-align:center; margin:0 0 8px;
+    color:var(--bone); font-size:clamp(9.5px,1.35vmin,11.5px);
+    background:#00000033; border:1px solid #D9A94E40; border-radius:8px;
+    padding:4px 10px; line-height:1.3;
+  }
+  .dungeon-dots{ display:flex; justify-content:center; gap:5px; margin:0 0 10px; }
+  .dungeon-dots .ddot{
+    width:6px; height:6px; border-radius:50%;
+    background:transparent; border:1px solid var(--bone-dim); padding:0;
+  }
+  .dungeon-dots .ddot.active{ background:var(--gold); border-color:var(--gold); }
   .dungeon-map{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
   .dungeon-level{ display:flex; gap:6px; justify-content:center; }
+  .dungeon-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
   .room-btn{
     flex:1; min-width:0;
-    padding:7px 6px;
+    padding:7px 8px;
     border-radius:8px;
     border:1.5px dashed #D9A94E40;
     background:#00000030;
     color:var(--bone-dim);
-    font-size:clamp(10px,1.5vmin,12.5px);
-    font-weight:600;
-    letter-spacing:.01em;
     opacity:.45;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    display:flex; flex-direction:column; justify-content:center;
+    transition:border-color .2s, background .2s, opacity .2s, box-shadow .2s, color .2s;
+  }
+  .room-btn .room-name{
+    font-size:clamp(9.5px,1.5vmin,11.5px); font-weight:700; letter-spacing:.01em; margin-bottom:1px;
+  }
+  .room-btn.current .room-name{ color:var(--gold); }
+  .room-btn .room-text{
+    font-size:clamp(8.5px,1.35vmin,10.5px); line-height:1.3; color:inherit;
   }
   .room-btn.visited{
     border:1.5px solid #D9A94E80; background:#D9A94E1F; color:var(--bone); opacity:1;
   }
   .room-btn.current{
     border:1.5px solid var(--gold); background:#D9A94E33; color:var(--gold); opacity:1;
-    box-shadow:0 0 10px 1px #D9A94E60;
+    box-shadow:0 0 10px 1px #D9A94E60; cursor:pointer;
   }
   .room-btn.available{
-    border:1.5px dashed var(--gold); color:var(--bone); opacity:1;
+    border:1.5px dashed var(--gold); color:var(--bone); opacity:1; cursor:pointer;
     animation:roomPulse 1.4s ease-in-out infinite;
   }
   @keyframes roomPulse{
     0%,100%{ box-shadow:0 0 0 0 #D9A94E00; }
     50%{ box-shadow:0 0 9px 1px #D9A94E60; }
   }
-  .dungeon-tip{
-    position:relative;
-    background:#00000055; border:1px solid #D9A94E55; border-radius:9px;
-    padding:8px 10px 9px; margin:0 0 10px;
-    min-height:18px;
-  }
-  .dungeon-tip::before{
-    content:""; position:absolute; top:-6px; left:20px;
-    width:10px; height:10px; background:#0A0B0D; border-left:1px solid #D9A94E55; border-top:1px solid #D9A94E55;
-    transform:rotate(45deg);
-  }
-  .dungeon-tip .tip-name{
-    display:block; font-size:clamp(11px,1.6vmin,13px); font-weight:700; color:var(--gold); margin-bottom:2px;
-  }
-  .dungeon-tip .tip-text{
-    display:block; font-size:clamp(10px,1.5vmin,12px); color:var(--bone); line-height:1.4;
-  }
-  .dungeon-tip .tip-placeholder{ color:var(--bone-dim); font-style:italic; }
   .dungeon-actions{ display:flex; justify-content:flex-end; margin-top:10px; }
   .dungeon-actions .btn{ flex:none; padding:7px 14px; font-size:11.5px; }
   .dungeon-complete{
@@ -571,17 +587,21 @@
   </div>
   <div class="dungeon-backdrop" id="dungeonBackdrop"></div>
   <div class="dungeon-window" id="dungeonWindow">
-    <button class="close-x" data-role="dungeonClose">&times;</button>
-    <h3 id="dungeonTitle">Undercity</h3>
-    <p class="dsub">Tap any room to see what it does. Glowing rooms are your next choice.</p>
-    <div class="dungeon-tip" id="dungeonTip">
-      <span class="tip-name tip-placeholder" id="tipName">No room selected</span>
-      <span class="tip-text" id="tipText">Tap a room below to see what it does.</span>
-    </div>
-    <div class="dungeon-map" id="dungeonMap"></div>
-    <p class="dungeon-complete">Dungeon complete</p>
-    <div class="dungeon-actions">
-      <button class="btn" id="dungeonResetBtn">Reset dungeon</button>
+    <div id="dungeonInner">
+      <div class="dungeon-head">
+        <button class="dungeon-nav-arrow" data-role="dungeonPrev" aria-label="Previous dungeon">&#8249;</button>
+        <h3 id="dungeonTitle">Undercity</h3>
+        <button class="dungeon-nav-arrow" data-role="dungeonNext" aria-label="Next dungeon">&#8250;</button>
+        <button class="dungeon-nav-arrow close" data-role="dungeonClose" aria-label="Close">&times;</button>
+      </div>
+      <p class="dungeon-access" id="dungeonAccess"></p>
+      <p class="dsub" id="dungeonFlavor"></p>
+      <div class="dungeon-dots" id="dungeonDots"></div>
+      <div id="dungeonMapWrap"></div>
+      <p class="dungeon-complete">Dungeon complete</p>
+      <div class="dungeon-actions">
+        <button class="btn" id="dungeonResetBtn">Reset dungeon</button>
+      </div>
     </div>
   </div>
 </div>
@@ -643,41 +663,95 @@
     {key:'C', color:'#8A8A8A'}
   ];
   function mkMana(){ return {W:0,U:0,B:0,R:0,G:0,C:0}; }
-  const ROOM_GRAPH = {
-    entrance: ['forge','lostwell'],
-    forge: ['trap','arena'],
-    lostwell: ['arena','stash'],
-    trap: ['archives'],
-    arena: ['archives','catacombs'],
-    stash: ['catacombs'],
-    archives: ['throne'],
-    catacombs: ['throne'],
-    throne: []
-  };
-  const ROOM_LABELS = {
-    entrance:'Secret Entrance', forge:'Forge', lostwell:'Lost Well',
-    trap:'Trap!', arena:'Arena', stash:'Stash',
-    archives:'Archives', catacombs:'Catacombs', throne:'Throne of the Dead Three'
-  };
-  const ROOM_TEXT = {
-    entrance:'Search your library for a basic land card, reveal it, put it into your hand, then shuffle.',
-    forge:'Put two +1/+1 counters on target creature.',
-    lostwell:'Scry 2.',
-    trap:'Target player loses 5 life.',
-    arena:'Goad target creature.',
-    stash:'Create a Treasure token.',
-    archives:'Draw a card.',
-    catacombs:'Create a 4/1 black Skeleton creature token with menace.',
-    throne:'Reveal the top ten cards of your library. Put a creature card from among them onto the battlefield with three +1/+1 counters on it. It gains hexproof until your next turn. Then shuffle.'
-  };
-  const ROOM_LEVELS = [['entrance'], ['forge','lostwell'], ['trap','arena','stash'], ['archives','catacombs'], ['throne']];
+  const DUNGEONS = [
+    {
+      id:'lostmine', name:'Lost Mine of Phandelver',
+      access:'Entered by venturing into the dungeon (any \u201cventure into the dungeon\u201d effect).',
+      flavor:null,
+      levels:[['caveEntrance'],['goblinLair','mineTunnels'],['storeroom','darkPool','fungiCavern'],['temple']],
+      grid:null,
+      rooms:{
+        caveEntrance:{name:'Cave Entrance', text:'Scry 1.', leads:['goblinLair','mineTunnels']},
+        goblinLair:{name:'Goblin Lair', text:'Create a 1/1 red Goblin creature token.', leads:['storeroom','darkPool']},
+        mineTunnels:{name:'Mine Tunnels', text:'Create a Treasure token.', leads:['darkPool','fungiCavern']},
+        storeroom:{name:'Storeroom', text:'Put a +1/+1 counter on target creature.', leads:['temple']},
+        darkPool:{name:'Dark Pool', text:'Each opponent loses 1 life and you gain 1 life.', leads:['temple']},
+        fungiCavern:{name:'Fungi Cavern', text:'Target creature gets -4/-0 until your next turn.', leads:['temple']},
+        temple:{name:'Temple of Dumathoin', text:'Draw a card.', leads:[]}
+      }
+    },
+    {
+      id:'tomb', name:'Tomb of Annihilation',
+      access:'Entered by venturing into the dungeon (any \u201cventure into the dungeon\u201d effect).',
+      flavor:null,
+      levels:[['trappedEntry'],['veilsOfFear','oubliette'],['sandfallCell'],['cradle']],
+      grid:[
+        {key:'trappedEntry', col:'1 / span 2', row:'1'},
+        {key:'veilsOfFear', col:'1', row:'2'},
+        {key:'sandfallCell', col:'1', row:'3'},
+        {key:'oubliette', col:'2', row:'2 / span 2'},
+        {key:'cradle', col:'1 / span 2', row:'4'}
+      ],
+      rooms:{
+        trappedEntry:{name:'Trapped Entry', text:'Each player loses 1 life.', leads:['veilsOfFear','oubliette']},
+        veilsOfFear:{name:'Veils of Fear', text:'Each player loses 2 life unless they discard a card.', leads:['sandfallCell']},
+        oubliette:{name:'Oubliette', text:'Discard a card and sacrifice a creature, an artifact, and a land.', leads:['cradle']},
+        sandfallCell:{name:'Sandfall Cell', text:'Each player loses 2 life unless they sacrifice a creature, artifact, or land of their choice.', leads:['cradle']},
+        cradle:{name:'Cradle of the Death God', text:'Create The Atropal, a legendary 4/4 black God Horror creature token with deathtouch.', leads:[]}
+      }
+    },
+    {
+      id:'madmage', name:'Dungeon of the Mad Mage',
+      access:'Entered by venturing into the dungeon (any \u201cventure into the dungeon\u201d effect).',
+      flavor:null,
+      levels:[['yawningPortal'],['dungeonLevel'],['goblinBazaar','twistedCaverns'],['lostLevel'],['runestoneCaverns','muiralsGraveyard'],['deepMines'],['madWizardsLair']],
+      grid:null,
+      rooms:{
+        yawningPortal:{name:'Yawning Portal', text:'You gain 1 life.', leads:['dungeonLevel']},
+        dungeonLevel:{name:'Dungeon Level', text:'Scry 1.', leads:['goblinBazaar','twistedCaverns']},
+        goblinBazaar:{name:'Goblin Bazaar', text:'Create a Treasure token.', leads:['lostLevel']},
+        twistedCaverns:{name:'Twisted Caverns', text:'Target creature can\u2019t attack until your next turn.', leads:['lostLevel']},
+        lostLevel:{name:'Lost Level', text:'Scry 2.', leads:['runestoneCaverns','muiralsGraveyard']},
+        runestoneCaverns:{name:'Runestone Caverns', text:'Exile the top two cards of your library. You may play them.', leads:['deepMines']},
+        muiralsGraveyard:{name:'Muiral\u2019s Graveyard', text:'Create two 1/1 black Skeleton creature tokens.', leads:['deepMines']},
+        deepMines:{name:'Deep Mines', text:'Scry 3.', leads:['madWizardsLair']},
+        madWizardsLair:{name:'Mad Wizard\u2019s Lair', text:'Draw three cards and reveal them. You may cast one of them without paying its mana cost.', leads:[]}
+      }
+    },
+    {
+      id:'undercity', name:'Undercity',
+      access:'Entered only by taking the initiative \u2014 taking it, or your upkeep while holding it, ventures into Undercity automatically.',
+      flavor:'You can\u2019t enter this dungeon unless you \u201cventure into Undercity.\u201d',
+      levels:[['entrance'],['forge','lostwell'],['trap','arena','stash'],['archives','catacombs'],['throne']],
+      grid:null,
+      rooms:{
+        entrance:{name:'Secret Entrance', text:'Search your library for a basic land card, reveal it, put it into your hand, then shuffle.', leads:['forge','lostwell']},
+        forge:{name:'Forge', text:'Put two +1/+1 counters on target creature.', leads:['trap','arena']},
+        lostwell:{name:'Lost Well', text:'Scry 2.', leads:['arena','stash']},
+        trap:{name:'Trap!', text:'Target player loses 5 life.', leads:['archives']},
+        arena:{name:'Arena', text:'Goad target creature.', leads:['archives','catacombs']},
+        stash:{name:'Stash', text:'Create a Treasure token.', leads:['catacombs']},
+        archives:{name:'Archives', text:'Draw a card.', leads:['throne']},
+        catacombs:{name:'Catacombs', text:'Create a 4/1 black Skeleton creature token with menace.', leads:['throne']},
+        throne:{name:'Throne of the Dead Three', text:'Reveal the top ten cards of your library. Put a creature card from among them onto the battlefield with three +1/+1 counters on it. It gains hexproof until your next turn. Then shuffle.', leads:[]}
+      }
+    }
+  ];
+  const UNDERCITY_INDEX = 3;
+
+  function mkDungeonProgress(){
+    let progress = {};
+    DUNGEONS.forEach(function(d){ progress[d.id] = []; });
+    return progress;
+  }
 
   function createDefaultPlayer(id, n){
     let dmg = {};
     for(let i = 1; i <= n; i++){ if(i !== id) dmg[i] = mkDmg(); }
     return {
       id:id, name:'Player ' + id, life:state.startingLife, poison:0, tax:0, storm:0,
-      mana:mkMana(), customCounter:{name:'Counter', value:0}, dmg:dmg, dungeonPath:[]
+      mana:mkMana(), customCounter:{name:'Counter', value:0}, dmg:dmg,
+      dungeonProgress:mkDungeonProgress(), dungeonView:UNDERCITY_INDEX
     };
   }
 
@@ -711,8 +785,11 @@
     seat.dataset.seat = p.id;
     seat.innerHTML =
       '<div class="panel">' +
-        '<button class="badge-btn monarch" data-role="monarchBtn" aria-label="Monarch">&#9819;</button>' +
-        '<button class="badge-btn initiative" data-role="initiativeBtn" aria-label="Initiative">&#9876;</button>' +
+        '<div class="badge-cluster left">' +
+          '<button class="badge-btn monarch" data-role="monarchBtn" aria-label="Monarch">&#9819;</button>' +
+          '<button class="badge-btn initiative" data-role="initiativeBtn" aria-label="Initiative">&#9876;</button>' +
+        '</div>' +
+        '<button class="badge-btn dungeons" data-role="dungeonsBtn" aria-label="Dungeons">&#9820;</button>' +
         '<div class="name" data-role="name" contenteditable="false">' + p.name + '</div>' +
         '<div class="life-row">' +
           '<button class="life-btn minus" data-role="minus" aria-label="Lose life">&#8722;</button>' +
@@ -839,6 +916,8 @@
     el.querySelector('[data-role="dmgOpen"]').classList.toggle('has-dmg', totalDmg > 0);
     el.querySelector('[data-role="monarchBtn"]').classList.toggle('active', state.monarch === id);
     el.querySelector('[data-role="initiativeBtn"]').classList.toggle('active', state.initiative === id);
+    let hasDungeonProgress = Object.keys(p.dungeonProgress).some(function(k){ return p.dungeonProgress[k].length > 0; });
+    el.querySelector('[data-role="dungeonsBtn"]').classList.toggle('active', hasDungeonProgress);
   }
 
   function refreshAll(){
@@ -1011,7 +1090,8 @@
     if(role === 'randomOpp'){ pickRandomOpponent(id); }
     if(role === 'expandToggle'){ toggleExtra(id); }
     if(role === 'monarchBtn'){ toggleMonarch(id); }
-    if(role === 'initiativeBtn'){ setInitiative(id); }
+    if(role === 'initiativeBtn'){ toggleInitiative(id); }
+    if(role === 'dungeonsBtn'){ openDungeonWindow(id); }
   });
 
   const dmgOverlay = document.getElementById('dmgOverlay');
@@ -1304,73 +1384,112 @@
     refreshAll();
   }
 
-  function setInitiative(id){
-    state.initiative = id;
+  function toggleInitiative(id){
+    state.initiative = (state.initiative === id) ? null : id;
     refreshAll();
-    openDungeonWindow(id);
   }
 
   const dungeonBackdrop = document.getElementById('dungeonBackdrop');
   const dungeonWindow = document.getElementById('dungeonWindow');
+  const dungeonInner = document.getElementById('dungeonInner');
   const dungeonTitle = document.getElementById('dungeonTitle');
-  const dungeonMap = document.getElementById('dungeonMap');
-  const tipName = document.getElementById('tipName');
-  const tipText = document.getElementById('tipText');
+  const dungeonAccess = document.getElementById('dungeonAccess');
+  const dungeonFlavor = document.getElementById('dungeonFlavor');
+  const dungeonDots = document.getElementById('dungeonDots');
+  const dungeonMapWrap = document.getElementById('dungeonMapWrap');
   let dungeonOpenFor = null;
-  let lastTippedRoom = null;
 
-  function showRoomTip(roomKey){
-    lastTippedRoom = roomKey;
-    tipName.textContent = ROOM_LABELS[roomKey];
-    tipName.classList.remove('tip-placeholder');
-    tipText.textContent = ROOM_TEXT[roomKey];
+  function roomBoxHTML(d, key, stateClass){
+    let r = d.rooms[key];
+    return '<div class="room-btn' + stateClass + '" data-room="' + key + '">' +
+      '<div class="room-name">' + r.name + '</div>' +
+      '<div class="room-text">' + r.text + '</div>' +
+      '</div>';
   }
 
-  function clearRoomTip(){
-    lastTippedRoom = null;
-    tipName.textContent = 'No room selected';
-    tipName.classList.add('tip-placeholder');
-    tipText.textContent = 'Tap a room below to see what it does.';
+  function stateClassFor(key, current, available, path){
+    if(key === current) return ' current';
+    if(available.indexOf(key) !== -1) return ' available';
+    if(path.indexOf(key) !== -1) return ' visited';
+    return '';
   }
 
   function renderDungeonMap(id){
     let p = getPlayer(id);
-    dungeonWindow.style.setProperty('--dwin-accent', COLORS[id]);
-    dungeonTitle.textContent = p.name + ' \u2014 Undercity';
-    let path = p.dungeonPath;
+    let d = DUNGEONS[p.dungeonView];
+    let path = p.dungeonProgress[d.id];
+    let entryKey = d.grid ? d.grid[0].key : d.levels[0][0];
     let current = path.length ? path[path.length - 1] : null;
-    let nextOptions = current ? ROOM_GRAPH[current] : ['entrance'];
-    dungeonMap.innerHTML = '';
-    ROOM_LEVELS.forEach(function(level){
-      let row = document.createElement('div');
-      row.className = 'dungeon-level';
-      level.forEach(function(roomKey){
-        let btn = document.createElement('button');
-        btn.className = 'room-btn';
-        btn.textContent = ROOM_LABELS[roomKey];
-        btn.dataset.room = roomKey;
-        if(roomKey === current){
-          btn.classList.add('current');
-        } else if(nextOptions.indexOf(roomKey) !== -1){
-          btn.classList.add('available');
-        } else if(path.indexOf(roomKey) !== -1){
-          btn.classList.add('visited');
-        }
-        row.appendChild(btn);
+    let available = current ? d.rooms[current].leads : [entryKey];
+
+    dungeonWindow.style.setProperty('--dwin-accent', COLORS[id]);
+    dungeonTitle.textContent = d.name;
+    dungeonAccess.textContent = d.access;
+    if(d.flavor){
+      dungeonFlavor.textContent = d.flavor;
+      dungeonFlavor.style.display = 'block';
+    } else {
+      dungeonFlavor.style.display = 'none';
+    }
+
+    dungeonDots.innerHTML = '';
+    DUNGEONS.forEach(function(dd, i){
+      let dot = document.createElement('button');
+      dot.className = 'ddot' + (i === p.dungeonView ? ' active' : '');
+      dot.setAttribute('aria-label', dd.name);
+      dot.addEventListener('click', function(){
+        p.dungeonView = i;
+        renderDungeonMap(id);
+        fitDungeonWindow();
       });
-      dungeonMap.appendChild(row);
+      dungeonDots.appendChild(dot);
     });
-    dungeonWindow.classList.toggle('done', current === 'throne');
-    if(lastTippedRoom) showRoomTip(lastTippedRoom);
+
+    let html;
+    if(d.grid){
+      html = '<div class="dungeon-grid">';
+      d.grid.forEach(function(cell){
+        let stateClass = stateClassFor(cell.key, current, available, path);
+        html += '<div class="room-btn' + stateClass + '" data-room="' + cell.key + '" style="grid-column:' + cell.col + '; grid-row:' + cell.row + ';">' +
+          '<div class="room-name">' + d.rooms[cell.key].name + '</div>' +
+          '<div class="room-text">' + d.rooms[cell.key].text + '</div>' +
+          '</div>';
+      });
+      html += '</div>';
+    } else {
+      html = '<div class="dungeon-map">';
+      d.levels.forEach(function(level){
+        html += '<div class="dungeon-level">';
+        level.forEach(function(key){
+          html += roomBoxHTML(d, key, stateClassFor(key, current, available, path));
+        });
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    dungeonMapWrap.innerHTML = html;
+    dungeonWindow.classList.toggle('done', current === (d.grid ? d.grid[d.grid.length - 1].key : d.levels[d.levels.length - 1][0]));
+  }
+
+  function fitDungeonWindow(){
+    dungeonInner.style.transform = 'scale(1)';
+    dungeonInner.style.width = '100%';
+    let available = dungeonWindow.clientHeight;
+    let natural = dungeonInner.scrollHeight;
+    if(natural > available && available > 0){
+      let scale = Math.max(0.5, (available / natural) * 0.97);
+      dungeonInner.style.width = (100 / scale) + '%';
+      dungeonInner.style.transform = 'scale(' + scale + ')';
+    }
   }
 
   function positionDungeonWindow(id){
     let seat = seatEl(id);
     let rect = seat.getBoundingClientRect();
     let isFlip = seat.classList.contains('flip');
-    let w = Math.min(rect.width * 0.78, 420);
+    let w = Math.min(rect.width * 0.85, 480);
     dungeonWindow.style.width = w + 'px';
-    dungeonWindow.style.maxHeight = (rect.height * 0.82) + 'px';
+    dungeonWindow.style.maxHeight = (rect.height * 0.9) + 'px';
     dungeonWindow.style.left = (rect.left + rect.width / 2 - w / 2) + 'px';
     dungeonWindow.style.top = (rect.top + rect.height / 2) + 'px';
     dungeonWindow.style.transform = isFlip
@@ -1381,11 +1500,13 @@
 
   function openDungeonWindow(id){
     dungeonOpenFor = id;
-    clearRoomTip();
     renderDungeonMap(id);
     positionDungeonWindow(id);
     dungeonBackdrop.classList.add('open');
-    requestAnimationFrame(function(){ dungeonWindow.classList.add('open'); });
+    requestAnimationFrame(function(){
+      dungeonWindow.classList.add('open');
+      fitDungeonWindow();
+    });
   }
 
   function closeDungeonWindow(){
@@ -1394,32 +1515,50 @@
     dungeonBackdrop.classList.remove('open');
   }
 
-  dungeonMap.addEventListener('click', function(e){
+  function switchDungeon(delta){
+    if(dungeonOpenFor === null) return;
+    let p = getPlayer(dungeonOpenFor);
+    p.dungeonView = (p.dungeonView + delta + DUNGEONS.length) % DUNGEONS.length;
+    renderDungeonMap(dungeonOpenFor);
+    fitDungeonWindow();
+  }
+
+  dungeonMapWrap.addEventListener('click', function(e){
     let btn = e.target.closest('.room-btn');
     if(!btn || dungeonOpenFor === null) return;
-    let roomKey = btn.dataset.room;
-    showRoomTip(roomKey);
     let p = getPlayer(dungeonOpenFor);
+    let d = DUNGEONS[p.dungeonView];
+    let path = p.dungeonProgress[d.id];
+    let roomKey = btn.dataset.room;
     if(btn.classList.contains('available')){
-      p.dungeonPath.push(roomKey);
+      path.push(roomKey);
       renderDungeonMap(dungeonOpenFor);
+      fitDungeonWindow();
+      refreshSeat(dungeonOpenFor);
     } else if(btn.classList.contains('current')){
-      p.dungeonPath.pop();
+      path.pop();
       renderDungeonMap(dungeonOpenFor);
+      fitDungeonWindow();
+      refreshSeat(dungeonOpenFor);
     }
   });
 
   document.getElementById('dungeonResetBtn').addEventListener('click', function(){
     if(dungeonOpenFor === null) return;
-    getPlayer(dungeonOpenFor).dungeonPath = [];
+    let p = getPlayer(dungeonOpenFor);
+    p.dungeonProgress[DUNGEONS[p.dungeonView].id] = [];
     renderDungeonMap(dungeonOpenFor);
+    fitDungeonWindow();
+    refreshSeat(dungeonOpenFor);
   });
 
   dungeonWindow.querySelector('[data-role="dungeonClose"]').addEventListener('click', closeDungeonWindow);
+  dungeonWindow.querySelector('[data-role="dungeonPrev"]').addEventListener('click', function(){ switchDungeon(-1); });
+  dungeonWindow.querySelector('[data-role="dungeonNext"]').addEventListener('click', function(){ switchDungeon(1); });
   dungeonBackdrop.addEventListener('click', closeDungeonWindow);
 
   window.addEventListener('resize', function(){
-    if(dungeonOpenFor !== null) positionDungeonWindow(dungeonOpenFor);
+    if(dungeonOpenFor !== null){ positionDungeonWindow(dungeonOpenFor); fitDungeonWindow(); }
   });
 
   let wakeLock = null;

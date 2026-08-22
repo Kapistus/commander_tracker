@@ -37,6 +37,8 @@ Each page is a single self-contained HTML file — HTML, CSS, and JavaScript all
 
 This is an unofficial, fan-made tool. It is not produced, sponsored, or endorsed by Wizards of the Coast. *Magic: The Gathering*, the dungeon cards referenced, their room names, effect text, and mana symbols are all the property of Wizards of the Coast LLC. Dungeon room text is reproduced here for reference/utility purposes, matching common practice among fan-made deckbuilding and companion tools.
 
+Commander tracker is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.
+
 ## License
 
 The code in this repository may be reused, modified, and shared freely. This license covers the HTML/CSS/JS only — it does not and cannot extend to Magic: The Gathering's card text, names, or imagery, which remain the intellectual property of Wizards of the Coast regardless of how the code itself is licensed.

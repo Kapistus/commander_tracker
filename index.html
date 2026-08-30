@@ -96,7 +96,10 @@
     text-transform:uppercase;
     font-weight:600;
   }
-  .seat.flip .eliminate-btn{ transform:translateX(-50%) rotate(180deg); }
+  .seat.flip .eliminate-btn{
+    top:auto; bottom:clamp(8px,1.8vmin,16px);
+    transform:translateX(-50%) rotate(180deg);
+  }
   .eliminate-btn:active{ color:var(--danger); border-color:var(--danger); }
   .eliminate-btn.active{ color:var(--danger); border-color:var(--danger); background:#00000060; }
   .eliminated-overlay{

@@ -31,7 +31,7 @@
     --p6:#3E8F82;
     --p6-dim:#1B2E2A;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-touch-callout:none;}
   html,body{
     margin:0; padding:0; width:100%; height:100%; overflow:hidden;
     background:var(--void); color:var(--bone);
@@ -222,6 +222,8 @@
   .dmg-btn.has-dmg{ color:var(--gold); border-color:var(--gold); }
   .dmg-btn:disabled{ opacity:.55; }
 
+  .expand-toggle-row{ width:100%; display:flex; gap:6px; margin-top:2px; }
+  .expand-toggle-row .expand-toggle{ flex:1; justify-content:center; margin-top:0; }
   .expand-toggle{
     margin-top:2px;
     font-size:clamp(10.5px,1.7vmin,13px);
@@ -279,6 +281,31 @@
     cursor:text;
   }
   .custom-label[contenteditable="true"]{ outline:none; color:var(--gold); white-space:normal; }
+
+  .dice-results{
+    display:flex; flex-wrap:wrap; gap:6px; justify-content:center;
+    width:100%; max-width:220px; margin:2px auto 0;
+  }
+  .die-tile{
+    width:clamp(28px,5.2vmin,40px); height:clamp(28px,5.2vmin,40px);
+    border-radius:7px; border:1.5px solid var(--gold);
+    background:#00000033; color:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:clamp(12px,2.2vmin,17px);
+    animation:dieAppear .2s ease;
+  }
+  @keyframes dieAppear{ 0%{ transform:scale(.6); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+  .coin-result{
+    width:clamp(36px,6.4vmin,52px); height:clamp(36px,6.4vmin,52px);
+    border-radius:50%; border:1.5px solid var(--gold);
+    background:#00000033; color:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    margin:4px auto 0;
+  }
+  .coin-result svg{ width:70%; height:70%; }
+  .coin-result:empty{ display:none; }
+  .coin-result.show{ animation:dieAppear .2s ease; }
 
   .hub{
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
@@ -379,7 +406,7 @@
     border:1.5px solid var(--dwin-accent, var(--gold));
     border-radius:16px;
     box-shadow:0 14px 34px #00000090;
-    padding:14px 16px 16px;
+    padding:18px 20px 22px;
     opacity:0; transform:scale(.9);
     pointer-events:none;
     transition:opacity .22s, transform .22s;
@@ -389,40 +416,38 @@
   }
   .dungeon-window.open{ opacity:1; transform:scale(1); pointer-events:auto; }
   #dungeonInner{ transform-origin:top center; }
-  .dungeon-head{ display:flex; align-items:center; gap:6px; margin-bottom:2px; }
+  .dungeon-head{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
   .dungeon-nav-arrow{
-    flex:none; width:clamp(24px,4.5vmin,32px); height:clamp(24px,4.5vmin,32px);
+    flex:none; width:clamp(28px,5vmin,38px); height:clamp(28px,5vmin,38px);
     border-radius:50%; border:1px solid var(--line); background:#00000033;
-    color:var(--bone-dim); font-size:clamp(14px,2.6vmin,18px);
+    color:var(--bone-dim); font-size:clamp(16px,3vmin,22px);
     display:flex; align-items:center; justify-content:center;
   }
   .dungeon-nav-arrow:active{ color:var(--gold); border-color:var(--gold); }
-  .dungeon-nav-arrow.close{ margin-left:4px; color:var(--bone-dim); font-size:clamp(16px,3vmin,20px); }
-  .dungeon-nav-arrow.close:active{ color:var(--danger); border-color:var(--danger); }
   .dungeon-window h3{
-    flex:1; margin:0; font-size:clamp(13px,2vmin,17px); letter-spacing:.03em; font-weight:700;
+    flex:1; margin:0; font-size:clamp(16px,2.6vmin,22px); letter-spacing:.03em; font-weight:700;
     color:var(--dwin-accent, var(--gold)); text-align:center;
   }
-  .dungeon-window .dsub{ color:var(--bone-dim); font-size:clamp(9.5px,1.35vmin,11.5px); margin:0 0 4px; text-align:center; }
+  .dungeon-window .dsub{ color:var(--bone-dim); font-size:clamp(12px,1.8vmin,15px); margin:0 0 6px; text-align:center; }
   .dungeon-access{
-    text-align:center; margin:0 0 8px;
-    color:var(--bone); font-size:clamp(9.5px,1.35vmin,11.5px);
+    text-align:center; margin:0 0 10px;
+    color:var(--bone); font-size:clamp(12px,1.8vmin,15px);
     background:#00000033; border:1px solid #D9A94E40; border-radius:8px;
-    padding:4px 10px; line-height:1.3;
+    padding:6px 12px; line-height:1.35;
   }
-  .dungeon-dots{ display:flex; justify-content:center; gap:5px; margin:0 0 10px; }
+  .dungeon-dots{ display:flex; justify-content:center; gap:6px; margin:0 0 12px; }
   .dungeon-dots .ddot{
-    width:6px; height:6px; border-radius:50%;
+    width:8px; height:8px; border-radius:50%;
     background:transparent; border:1px solid var(--bone-dim); padding:0;
   }
   .dungeon-dots .ddot.active{ background:var(--gold); border-color:var(--gold); }
-  .dungeon-map{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
-  .dungeon-level{ display:flex; gap:6px; justify-content:center; }
-  .dungeon-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .dungeon-map{ display:flex; flex-direction:column; gap:8px; align-items:stretch; }
+  .dungeon-level{ display:flex; gap:8px; justify-content:center; }
+  .dungeon-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .room-btn{
     flex:1; min-width:0;
-    padding:7px 8px;
-    border-radius:8px;
+    padding:10px 12px;
+    border-radius:9px;
     border:1.5px dashed #D9A94E40;
     background:#00000030;
     color:var(--bone-dim);
@@ -431,11 +456,11 @@
     transition:border-color .2s, background .2s, opacity .2s, box-shadow .2s, color .2s;
   }
   .room-btn .room-name{
-    font-size:clamp(9.5px,1.5vmin,11.5px); font-weight:700; letter-spacing:.01em; margin-bottom:1px;
+    font-size:clamp(12px,2vmin,15.5px); font-weight:700; letter-spacing:.01em; margin-bottom:2px;
   }
   .room-btn.current .room-name{ color:var(--gold); }
   .room-btn .room-text{
-    font-size:clamp(8.5px,1.35vmin,10.5px); line-height:1.3; color:inherit;
+    font-size:clamp(11px,1.8vmin,14px); line-height:1.4; color:inherit;
   }
   .room-btn.visited{
     border:1.5px solid #D9A94E80; background:#D9A94E1F; color:var(--bone); opacity:1;
@@ -452,13 +477,43 @@
     0%,100%{ box-shadow:0 0 0 0 #D9A94E00; }
     50%{ box-shadow:0 0 9px 1px #D9A94E60; }
   }
-  .dungeon-actions{ display:flex; justify-content:flex-end; margin-top:10px; }
-  .dungeon-actions .btn{ flex:none; padding:7px 14px; font-size:11.5px; }
+  .dungeon-actions{ display:flex; justify-content:flex-end; margin-top:12px; }
+  .dungeon-actions .btn{ flex:none; padding:9px 18px; font-size:14px; }
   .dungeon-complete{
-    text-align:center; font-size:clamp(11px,1.6vmin,13px); color:var(--gold);
-    letter-spacing:.04em; margin-top:8px; display:none;
+    text-align:center; font-size:clamp(14px,2vmin,17px); color:var(--gold);
+    letter-spacing:.04em; margin-top:10px; display:none;
   }
   .dungeon-window.done .dungeon-complete{ display:block; }
+
+  .submenu-backdrop{
+    position:fixed; inset:0; background:#0A0B0DA0;
+    opacity:0; pointer-events:none; transition:opacity .25s;
+    z-index:22;
+  }
+  .submenu-backdrop.open{ opacity:1; pointer-events:auto; }
+  .submenu-panel{
+    position:fixed;
+    background:var(--slate);
+    border:1.5px solid var(--sm-accent, var(--gold));
+    border-radius:14px;
+    box-shadow:0 14px 34px #00000090;
+    opacity:0; transform:scale(.95);
+    pointer-events:none;
+    transition:opacity .22s, transform .22s;
+    z-index:23;
+    overflow:auto;
+    padding:clamp(14px,2.6vmin,26px);
+    display:flex; flex-direction:column; align-items:center;
+    gap:clamp(8px,1.6vmin,16px);
+  }
+  .submenu-panel.open{ opacity:1; transform:scale(1); pointer-events:auto; }
+  .submenu-panel.flip{ transform:rotate(180deg) scale(.95); }
+  .submenu-panel.flip.open{ transform:rotate(180deg) scale(1); }
+  #submenuPanelInner{
+    display:flex; flex-direction:column; align-items:center;
+    gap:clamp(8px,1.6vmin,16px);
+    width:100%; max-width:420px;
+  }
 
   .overlay{
     position:fixed; inset:0; background:#0A0B0DE0;
@@ -470,7 +525,9 @@
     background:var(--slate); border:1px solid var(--line); border-radius:18px;
     padding:20px 22px; width:min(560px,92vw); max-height:88vh; overflow:auto;
     color:var(--bone);
+    transition:transform .15s;
   }
+  .card.flip{ transform:rotate(180deg); }
   .card h2{
     margin:0 0 4px; font-size:20px; letter-spacing:.03em; font-weight:600;
   }
@@ -508,10 +565,6 @@
   }
   .btn.primary{ background:var(--gold); color:#231a08; border-color:var(--gold); }
   .btn.danger{ background:var(--danger); color:#2a0c0c; border-color:var(--danger); }
-  .close-x{
-    position:absolute; top:14px; right:16px; background:none; border:none;
-    color:var(--bone-dim); font-size:22px; line-height:1;
-  }
   .settings-group{ margin-bottom:18px; }
   .settings-group .glabel{ font-size:12px; color:var(--bone-dim); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; display:block; }
   .life-options{ display:flex; gap:8px; flex-wrap:wrap; }
@@ -607,7 +660,6 @@
         <button class="dungeon-nav-arrow" data-role="dungeonPrev" aria-label="Previous dungeon">&#8249;</button>
         <h3 id="dungeonTitle">Undercity</h3>
         <button class="dungeon-nav-arrow" data-role="dungeonNext" aria-label="Next dungeon">&#8250;</button>
-        <button class="dungeon-nav-arrow close" data-role="dungeonClose" aria-label="Close">&times;</button>
       </div>
       <p class="dungeon-access" id="dungeonAccess"></p>
       <p class="dsub" id="dungeonFlavor"></p>
@@ -619,23 +671,22 @@
       </div>
     </div>
   </div>
+  <div class="submenu-backdrop" id="submenuBackdrop"></div>
+  <div class="submenu-panel" id="submenuPanel">
+    <div id="submenuPanelInner"></div>
+  </div>
 </div>
 
 <div class="overlay" id="dmgOverlay">
   <div class="card rel">
-    <button class="close-x" data-close="dmgOverlay">&times;</button>
     <h2 id="dmgTitle">Commander damage</h2>
     <p class="sub">Damage taken from each opponent&rsquo;s commander. 21 or more from a single commander is lethal. Turn on Partner if that opponent has two commanders.</p>
     <div id="dmgRows"></div>
-    <div class="row-actions">
-      <button class="btn primary" data-close="dmgOverlay">Done</button>
-    </div>
   </div>
 </div>
 
 <div class="overlay" id="settingsOverlay">
   <div class="card rel">
-    <button class="close-x" data-close="settingsOverlay">&times;</button>
     <h2>Settings</h2>
     <p class="sub">Life starts at 40. Changing player count takes effect next time you press Reset.</p>
     <div class="settings-group">
@@ -652,9 +703,6 @@
       <span class="glabel">Display</span>
       <button class="btn" id="fullscreenBtn" style="width:100%;">Enter fullscreen</button>
     </div>
-    <div class="row-actions">
-      <button class="btn primary" data-close="settingsOverlay">Done</button>
-    </div>
   </div>
 </div>
 
@@ -663,7 +711,6 @@
     <h2>Start new game?</h2>
     <p class="sub">This resets every player&rsquo;s life, poison, commander tax and commander damage, and rebuilds the table for the selected player count.</p>
     <div class="row-actions">
-      <button class="btn" data-close="resetOverlay">Cancel</button>
       <button class="btn danger" id="confirmReset">Reset</button>
     </div>
   </div>
@@ -671,7 +718,26 @@
 
 <script>
 (function(){
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); }, false);
+
   const COLORS = {1:'#C1502E',2:'#4C8065',3:'#3E6E93',4:'#8564A8',5:'#A8547E',6:'#3E8F82'};
+  const DEMON_HEAD_SVG =
+    '<svg viewBox="0 0 24 24" fill="currentColor">' +
+      '<path fill-rule="evenodd" d="' +
+        'M5.5,13 A6.5,6 0 1,0 18.5,13 A6.5,6 0 1,0 5.5,13 Z ' +
+        'M8.5,9 C6,8 4,6.5 4,4.5 C5.5,5.5 7.5,7 9.7,7.8 Z ' +
+        'M15.5,9 C18,8 20,6.5 20,4.5 C18.5,5.5 16.5,7 14.3,7.8 Z ' +
+        'M9,18 L15,18 L12,22 Z ' +
+        'M8.3,11 L11,11.8 L10.2,13.4 L7.8,12.4 Z ' +
+        'M15.7,11 L13,11.8 L13.8,13.4 L16.2,12.4 Z ' +
+        'M9.3,15.3 Q12,17.4 14.7,15.3 Q12,16.8 9.3,15.3 Z' +
+      '"></path>' +
+    '</svg>';
+  const DEMON_TAIL_SVG =
+    '<svg viewBox="0 0 24 24" fill="currentColor">' +
+      '<path d="M6,22 C2,17 3,9 9,7 C14,5.3 12,3 15,1 L19,3 C15,4.5 15,7 10,9.5 C5,12 5,18 9,22 Z"></path>' +
+    '</svg>';
+  const COIN_GLYPHS = {H:DEMON_HEAD_SVG, T:DEMON_TAIL_SVG};
   function mkDmg(){ return {a:0, b:0, partner:false}; }
   const MANA_TYPES = [
     {key:'W', color:'#E8DFC8', icon:'data:image/png;base64,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'},
@@ -770,12 +836,14 @@
     return {
       id:id, name:'Player ' + id, life:state.startingLife, poison:0, tax:0, storm:0,
       mana:mkMana(), customCounter:{name:'Counter', value:0}, dmg:dmg,
-      dungeonProgress:mkDungeonProgress(), dungeonView:UNDERCITY_INDEX
+      dungeonProgress:mkDungeonProgress(), dungeonView:UNDERCITY_INDEX,
+      dice:{sides:6, count:1, results:[]}, coin:null
     };
   }
 
   const STORAGE_KEY = 'commanderTrackerState_v1';
   let gameStartedAt = Date.now();
+  let timerRunning = false;
   let saveTimer = null;
 
   function saveState(){
@@ -787,7 +855,8 @@
           monarch: state.monarch,
           initiative: state.initiative,
           players: state.players,
-          gameStartedAt: gameStartedAt
+          gameStartedAt: gameStartedAt,
+          timerRunning: timerRunning
         }));
       }catch(e){ /* storage unavailable or full; ignore silently */ }
     }, 150);
@@ -836,8 +905,17 @@
     if(typeof saved.dungeonView === 'number' && saved.dungeonView >= 0 && saved.dungeonView < DUNGEONS.length){
       fresh.dungeonView = saved.dungeonView;
     }
+    if(saved.dice && typeof saved.dice === 'object'){
+      if(typeof saved.dice.sides === 'number') fresh.dice.sides = clampDiceSides(saved.dice.sides);
+      if(typeof saved.dice.count === 'number') fresh.dice.count = clampDiceCount(saved.dice.count);
+      if(Array.isArray(saved.dice.results)) fresh.dice.results = saved.dice.results.filter(function(v){ return typeof v === 'number'; });
+    }
+    if(saved.coin === 'H' || saved.coin === 'T') fresh.coin = saved.coin;
     return fresh;
   }
+
+  function clampDiceSides(v){ return Math.min(100, Math.max(2, Math.round(v))); }
+  function clampDiceCount(v){ return Math.min(20, Math.max(1, Math.round(v))); }
 
   function formatElapsed(ms){
     let totalSec = Math.max(0, Math.floor(ms / 1000));
@@ -850,7 +928,8 @@
 
   function updateElapsedTimer(){
     let el = document.getElementById('elapsedTimer');
-    if(el) el.textContent = formatElapsed(Date.now() - gameStartedAt);
+    if(!el) return;
+    el.textContent = timerRunning ? formatElapsed(Date.now() - gameStartedAt) : formatElapsed(0);
   }
 
   const state = {
@@ -873,6 +952,62 @@
         '<span class="cval" data-role="manaVal" data-mana="' + m.key + '">0</span>' +
         '<button class="cbtn" data-role="manaPlus" data-mana="' + m.key + '">+</button>' +
       '</div>'
+    );
+  }
+
+  function renderDiceResultsHTML(results){
+    return results.map(function(v){ return '<div class="die-tile">' + v + '</div>'; }).join('');
+  }
+
+  function countersInnerHTML(p){
+    return (
+      '<div class="subrow">' +
+        '<div class="counter poison" data-role="poisonBox">' +
+          '<button class="cbtn" data-role="poisonMinus">&#8722;</button>' +
+          '<span class="clabel">Poison</span>' +
+          '<span class="cval" data-role="poisonVal">0</span>' +
+          '<button class="cbtn" data-role="poisonPlus">+</button>' +
+        '</div>' +
+        '<div class="counter storm">' +
+          '<button class="cbtn" data-role="stormMinus">&#8722;</button>' +
+          '<span class="clabel">Storm</span>' +
+          '<span class="cval" data-role="stormVal">0</span>' +
+          '<button class="cbtn" data-role="stormPlus">+</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mana-column">' +
+        MANA_TYPES.map(manaRowHTML).join('') +
+      '</div>' +
+      '<div class="counter custom-counter">' +
+        '<button class="cbtn" data-role="customMinus">&#8722;</button>' +
+        '<span class="custom-label" data-role="customLabel" contenteditable="false">' + p.customCounter.name + '</span>' +
+        '<span class="cval" data-role="customVal">0</span>' +
+        '<button class="cbtn" data-role="customPlus">+</button>' +
+      '</div>'
+    );
+  }
+
+  function rollsInnerHTML(p){
+    return (
+      '<button class="dmg-btn" data-role="randomOpp">Random opponent</button>' +
+      '<div class="subrow">' +
+        '<div class="counter" data-role="diceSidesBox">' +
+          '<button class="cbtn" data-role="diceSidesMinus">&#8722;</button>' +
+          '<span class="clabel">Sides</span>' +
+          '<span class="cval" data-role="diceSidesVal">' + p.dice.sides + '</span>' +
+          '<button class="cbtn" data-role="diceSidesPlus">+</button>' +
+        '</div>' +
+        '<div class="counter" data-role="diceCountBox">' +
+          '<button class="cbtn" data-role="diceCountMinus">&#8722;</button>' +
+          '<span class="clabel">Rolls</span>' +
+          '<span class="cval" data-role="diceCountVal">' + p.dice.count + '</span>' +
+          '<button class="cbtn" data-role="diceCountPlus">+</button>' +
+        '</div>' +
+      '</div>' +
+      '<button class="dmg-btn" data-role="rollDice">Roll dice</button>' +
+      '<div class="dice-results" data-role="diceResults">' + renderDiceResultsHTML(p.dice.results) + '</div>' +
+      '<button class="dmg-btn" data-role="flipCoin">Flip coin</button>' +
+      '<div class="coin-result" data-role="coinResult">' + (p.coin ? COIN_GLYPHS[p.coin] : '') + '</div>'
     );
   }
 
@@ -902,36 +1037,19 @@
           '<span class="cval" data-role="taxVal">0</span>' +
           '<button class="cbtn" data-role="taxPlus">+</button>' +
         '</div>' +
-        '<button class="expand-toggle" data-role="expandToggle">' +
-          '<span class="toggle-label" data-role="expandToggle">More counters</span><span class="chevron" data-role="expandToggle">&#9662;</span>' +
-        '</button>' +
-        '<div class="extra-wrap" data-role="extraWrap">' +
-          '<div class="extra-inner">' +
-            '<div class="subrow">' +
-              '<div class="counter poison" data-role="poisonBox">' +
-                '<button class="cbtn" data-role="poisonMinus">&#8722;</button>' +
-                '<span class="clabel">Poison</span>' +
-                '<span class="cval" data-role="poisonVal">0</span>' +
-                '<button class="cbtn" data-role="poisonPlus">+</button>' +
-              '</div>' +
-              '<div class="counter storm">' +
-                '<button class="cbtn" data-role="stormMinus">&#8722;</button>' +
-                '<span class="clabel">Storm</span>' +
-                '<span class="cval" data-role="stormVal">0</span>' +
-                '<button class="cbtn" data-role="stormPlus">+</button>' +
-              '</div>' +
-            '</div>' +
-            '<div class="mana-column">' +
-              MANA_TYPES.map(manaRowHTML).join('') +
-            '</div>' +
-            '<div class="counter custom-counter">' +
-              '<button class="cbtn" data-role="customMinus">&#8722;</button>' +
-              '<span class="custom-label" data-role="customLabel" contenteditable="false">' + p.customCounter.name + '</span>' +
-              '<span class="cval" data-role="customVal">0</span>' +
-              '<button class="cbtn" data-role="customPlus">+</button>' +
-            '</div>' +
-            '<button class="dmg-btn" data-role="randomOpp">Random opponent</button>' +
-          '</div>' +
+        '<div class="expand-toggle-row">' +
+          '<button class="expand-toggle" data-role="expandToggle" data-section="counters">' +
+            '<span class="toggle-label" data-role="expandToggle" data-section="counters">Counters</span><span class="chevron" data-role="expandToggle" data-section="counters">&#9662;</span>' +
+          '</button>' +
+          '<button class="expand-toggle" data-role="expandToggle" data-section="rolls">' +
+            '<span class="toggle-label" data-role="expandToggle" data-section="rolls">Rolls / Flips</span><span class="chevron" data-role="expandToggle" data-section="rolls">&#9662;</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="extra-wrap" data-role="extraWrap-counters">' +
+          '<div class="extra-inner">' + countersInnerHTML(p) + '</div>' +
+        '</div>' +
+        '<div class="extra-wrap" data-role="extraWrap-rolls">' +
+          '<div class="extra-inner">' + rollsInnerHTML(p) + '</div>' +
         '</div>' +
       '</div>';
     return seat;
@@ -939,6 +1057,7 @@
 
   function renderSeatsFromState(){
     if(typeof closeDungeonWindow === 'function') closeDungeonWindow();
+    if(typeof closeSubmenu === 'function') closeSubmenu();
     if(oppPickTimer){ clearInterval(oppPickTimer); oppPickTimer = null; }
     clearTimeout(oppHighlightTimer);
     Object.keys(lifeDeltaTimers).forEach(function(k){ clearTimeout(lifeDeltaTimers[k]); });
@@ -975,7 +1094,9 @@
     }
     state.monarch = null;
     state.initiative = null;
+    timerRunning = false;
     gameStartedAt = Date.now();
+    updateElapsedTimer();
     renderSeatsFromState();
   }
 
@@ -1009,9 +1130,11 @@
       if(valEl) valEl.textContent = p.mana[m.key];
     });
     el.querySelector('[data-role="customVal"]').textContent = p.customCounter.value;
+    el.querySelector('[data-role="diceSidesVal"]').textContent = p.dice.sides;
+    el.querySelector('[data-role="diceCountVal"]').textContent = p.dice.count;
     let pbox = el.querySelector('[data-role="poisonBox"]');
     pbox.classList.toggle('hot', p.poison >= 10);
-    el.querySelector('[data-role="expandToggle"]').classList.toggle('warn', p.poison >= 7);
+    el.querySelector('.expand-toggle[data-section="counters"]').classList.toggle('warn', p.poison >= 7);
     let totalDmg = 0;
     Object.keys(p.dmg).forEach(function(k){
       let src = p.dmg[k];
@@ -1022,6 +1145,19 @@
     el.querySelector('[data-role="initiativeBtn"]').classList.toggle('active', state.initiative === id);
     let hasDungeonProgress = Object.keys(p.dungeonProgress).some(function(k){ return p.dungeonProgress[k].length > 0; });
     el.querySelector('[data-role="dungeonsBtn"]').classList.toggle('active', hasDungeonProgress);
+    let mirror = submenuMirrorRoot(id);
+    if(mirror){
+      let mPoisonVal = mirror.querySelector('[data-role="poisonVal"]'); if(mPoisonVal) mPoisonVal.textContent = p.poison;
+      let mStormVal = mirror.querySelector('[data-role="stormVal"]'); if(mStormVal) mStormVal.textContent = p.storm;
+      MANA_TYPES.forEach(function(m){
+        let mv = mirror.querySelector('.cval[data-role="manaVal"][data-mana="' + m.key + '"]');
+        if(mv) mv.textContent = p.mana[m.key];
+      });
+      let mCustomVal = mirror.querySelector('[data-role="customVal"]'); if(mCustomVal) mCustomVal.textContent = p.customCounter.value;
+      let mPoisonBox = mirror.querySelector('[data-role="poisonBox"]'); if(mPoisonBox) mPoisonBox.classList.toggle('hot', p.poison >= 10);
+      let mDiceSidesVal = mirror.querySelector('[data-role="diceSidesVal"]'); if(mDiceSidesVal) mDiceSidesVal.textContent = p.dice.sides;
+      let mDiceCountVal = mirror.querySelector('[data-role="diceCountVal"]'); if(mDiceCountVal) mDiceCountVal.textContent = p.dice.count;
+    }
     saveState();
   }
 
@@ -1096,6 +1232,58 @@
     refreshSeat(id);
   }
 
+  function changeDiceSides(id, delta){
+    let p = getPlayer(id);
+    p.dice.sides = clampDiceSides(p.dice.sides + delta);
+    refreshSeat(id);
+  }
+
+  function changeDiceCount(id, delta){
+    let p = getPlayer(id);
+    p.dice.count = clampDiceCount(p.dice.count + delta);
+    refreshSeat(id);
+  }
+
+  function rollDice(id){
+    let p = getPlayer(id);
+    let results = [];
+    for(let i = 0; i < p.dice.count; i++){
+      results.push(1 + Math.floor(Math.random() * p.dice.sides));
+    }
+    p.dice.results = results;
+    let el = seatEl(id).querySelector('[data-role="diceResults"]');
+    if(el) el.innerHTML = renderDiceResultsHTML(results);
+    let mirror = submenuMirrorRoot(id);
+    if(mirror){
+      let mEl = mirror.querySelector('[data-role="diceResults"]');
+      if(mEl) mEl.innerHTML = renderDiceResultsHTML(results);
+    }
+    saveState();
+  }
+
+  function flipCoin(id){
+    let p = getPlayer(id);
+    p.coin = Math.random() < 0.5 ? 'H' : 'T';
+    let el = seatEl(id).querySelector('[data-role="coinResult"]');
+    if(el){
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.innerHTML = COIN_GLYPHS[p.coin];
+      el.classList.add('show');
+    }
+    let mirror = submenuMirrorRoot(id);
+    if(mirror){
+      let mEl = mirror.querySelector('[data-role="coinResult"]');
+      if(mEl){
+        mEl.classList.remove('show');
+        void mEl.offsetWidth;
+        mEl.innerHTML = COIN_GLYPHS[p.coin];
+        mEl.classList.add('show');
+      }
+    }
+    saveState();
+  }
+
   function attachHold(el, onStep){
     let timer = null, interval = null, delay = 420, speed = 150;
     function start(e){
@@ -1156,8 +1344,7 @@
     }, {once:true});
   }
 
-  function editCustomLabel(id){
-    let labelEl = seatEl(id).querySelector('[data-role="customLabel"]');
+  function editCustomLabel(id, labelEl){
     labelEl.contentEditable = 'true';
     labelEl.focus();
     document.execCommand && document.execCommand('selectAll', false, null);
@@ -1167,6 +1354,11 @@
       let txt = labelEl.textContent.trim().slice(0, 14) || p.customCounter.name || 'Counter';
       p.customCounter.name = txt;
       labelEl.textContent = txt;
+      [seatEl(id), submenuMirrorRoot(id)].forEach(function(root){
+        if(!root) return;
+        let other = root.querySelector('[data-role="customLabel"]');
+        if(other && other !== labelEl) other.textContent = txt;
+      });
       saveState();
     }
     labelEl.addEventListener('blur', commit, {once:true});
@@ -1176,7 +1368,7 @@
   }
 
   board.addEventListener('click', function(e){
-    let seatEl_ = e.target.closest('.seat');
+    let seatEl_ = e.target.closest('[data-seat]');
     if(!seatEl_) return;
     let id = parseInt(seatEl_.dataset.seat, 10);
     let role = e.target.dataset.role;
@@ -1192,10 +1384,16 @@
     if(role === 'manaPlus'){ changeMana(id, e.target.dataset.mana, 1); }
     if(role === 'customMinus'){ changeCustom(id, -1); }
     if(role === 'customPlus'){ changeCustom(id, 1); }
-    if(role === 'customLabel'){ editCustomLabel(id); }
+    if(role === 'customLabel'){ editCustomLabel(id, e.target); }
     if(role === 'dmgOpen'){ openDmg(id); }
-    if(role === 'randomOpp'){ pickRandomOpponent(id); }
-    if(role === 'expandToggle'){ toggleExtra(id); }
+    if(role === 'randomOpp'){ closeSubmenu(); pickRandomOpponent(id, e.target); }
+    if(role === 'diceSidesMinus'){ changeDiceSides(id, -1); }
+    if(role === 'diceSidesPlus'){ changeDiceSides(id, 1); }
+    if(role === 'diceCountMinus'){ changeDiceCount(id, -1); }
+    if(role === 'diceCountPlus'){ changeDiceCount(id, 1); }
+    if(role === 'rollDice'){ rollDice(id); }
+    if(role === 'flipCoin'){ flipCoin(id); }
+    if(role === 'expandToggle'){ openSubmenu(id, e.target.dataset.section); }
     if(role === 'monarchBtn'){ toggleMonarch(id); }
     if(role === 'initiativeBtn'){ toggleInitiative(id); }
     if(role === 'dungeonsBtn'){ openDungeonWindow(id); }
@@ -1261,6 +1459,7 @@
   function openDmg(id){
     let p = getPlayer(id);
     dmgTitle.textContent = p.name + ' \u2014 commander damage';
+    dmgOverlay.querySelector('.card').classList.toggle('flip', seatEl(id).classList.contains('flip'));
     dmgRows.innerHTML = '';
     state.players.filter(function(o){ return o.id !== id; }).forEach(function(o){
       let row = document.createElement('div');
@@ -1293,10 +1492,12 @@
     refreshSeat(id);
   }
 
-  document.querySelectorAll('[data-close]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      document.getElementById(btn.dataset.close).classList.remove('open');
-      refreshAll();
+  document.querySelectorAll('.overlay').forEach(function(ov){
+    ov.addEventListener('click', function(e){
+      if(e.target === ov){
+        ov.classList.remove('open');
+        refreshAll();
+      }
     });
   });
 
@@ -1424,6 +1625,12 @@
 
   function spinFirstPlayer(){
     if(spinTimer) return;
+    if(!timerRunning){
+      timerRunning = true;
+      gameStartedAt = Date.now();
+      updateElapsedTimer();
+      saveState();
+    }
     clearTimeout(highlightTimer); clearTimeout(closeTimer);
     state.players.forEach(function(p){ seatEl(p.id).classList.remove('start-highlight'); });
     disk.classList.remove('landed');
@@ -1465,21 +1672,81 @@
     diskBackdrop.classList.remove('open');
   });
 
-  function toggleExtra(id){
-    let el = seatEl(id);
-    let wrap = el.querySelector('[data-role="extraWrap"]');
-    let btn = el.querySelector('[data-role="expandToggle"]');
-    let label = el.querySelector('.toggle-label');
-    let isOpen = wrap.classList.toggle('expanded');
-    btn.classList.toggle('expanded', isOpen);
-    label.textContent = isOpen ? 'Fewer counters' : 'More counters';
+  let submenuOpenFor = null;
+
+  function submenuMirrorRoot(id){
+    return (submenuOpenFor && submenuOpenFor.id === id) ? document.getElementById('submenuPanelInner') : null;
   }
+
+  function positionSubmenu(){
+    if(!submenuOpenFor) return;
+    let seat = seatEl(submenuOpenFor.id);
+    if(!seat) return;
+    let ownRow = seat.parentElement;
+    let otherRow = (ownRow === topRow) ? bottomRow : topRow;
+    let otherRowRect = otherRow.getBoundingClientRect();
+
+    let panel = document.getElementById('submenuPanel');
+    panel.style.left = otherRowRect.left + 'px';
+    panel.style.top = otherRowRect.top + 'px';
+    panel.style.width = otherRowRect.width + 'px';
+    panel.style.height = otherRowRect.height + 'px';
+  }
+
+  function openSubmenu(id, section){
+    if(submenuOpenFor && submenuOpenFor.id === id && submenuOpenFor.section === section){
+      closeSubmenu();
+      return;
+    }
+    if(submenuOpenFor) closeSubmenu();
+
+    let p = getPlayer(id);
+    let seat = seatEl(id);
+    let inner = document.getElementById('submenuPanelInner');
+    inner.innerHTML = section === 'counters' ? countersInnerHTML(p) : rollsInnerHTML(p);
+
+    submenuOpenFor = {id:id, section:section};
+
+    let panel = document.getElementById('submenuPanel');
+    panel.dataset.seat = id;
+    panel.classList.toggle('flip', seat.classList.contains('flip'));
+    panel.style.setProperty('--sm-accent', COLORS[id]);
+
+    positionSubmenu();
+
+    requestAnimationFrame(function(){
+      document.getElementById('submenuBackdrop').classList.add('open');
+      panel.classList.add('open');
+    });
+
+    let btn = seat.querySelector('.expand-toggle[data-section="' + section + '"]');
+    if(btn) btn.classList.add('expanded');
+  }
+
+  function closeSubmenu(){
+    if(!submenuOpenFor) return;
+    let prevId = submenuOpenFor.id;
+    let prevSection = submenuOpenFor.section;
+    submenuOpenFor = null;
+
+    document.getElementById('submenuBackdrop').classList.remove('open');
+    let panel = document.getElementById('submenuPanel');
+    panel.classList.remove('open');
+    delete panel.dataset.seat;
+
+    let seat = seatEl(prevId);
+    if(seat){
+      let btn = seat.querySelector('.expand-toggle[data-section="' + prevSection + '"]');
+      if(btn) btn.classList.remove('expanded');
+    }
+  }
+
+  document.getElementById('submenuBackdrop').addEventListener('click', closeSubmenu);
 
   let oppPickTimer = null, oppHighlightTimer = null;
 
-  function pickRandomOpponent(id){
+  function pickRandomOpponent(id, btn){
     if(oppPickTimer) return;
-    let btn = seatEl(id).querySelector('[data-role="randomOpp"]');
     let candidates = state.players.filter(function(p){ return p.id !== id; });
     if(!candidates.length) return;
     clearTimeout(oppHighlightTimer);
@@ -1617,7 +1884,7 @@
     let seat = seatEl(id);
     let rect = seat.getBoundingClientRect();
     let isFlip = seat.classList.contains('flip');
-    let w = Math.min(rect.width * 0.9, 520);
+    let w = Math.min(rect.width * 0.9, 660);
     dungeonWindow.style.width = w + 'px';
     dungeonWindow.style.maxHeight = '92vh';
     dungeonWindow.style.left = (rect.left + rect.width / 2 - w / 2) + 'px';
@@ -1682,13 +1949,13 @@
     refreshSeat(dungeonOpenFor);
   });
 
-  dungeonWindow.querySelector('[data-role="dungeonClose"]').addEventListener('click', closeDungeonWindow);
   dungeonWindow.querySelector('[data-role="dungeonPrev"]').addEventListener('click', function(){ switchDungeon(-1); });
   dungeonWindow.querySelector('[data-role="dungeonNext"]').addEventListener('click', function(){ switchDungeon(1); });
   dungeonBackdrop.addEventListener('click', closeDungeonWindow);
 
   window.addEventListener('resize', function(){
     if(dungeonOpenFor !== null){ positionDungeonWindow(dungeonOpenFor); fitDungeonWindow(); }
+    if(submenuOpenFor){ positionSubmenu(); }
   });
 
   let wakeLock = null;
@@ -1718,6 +1985,7 @@
       state.initiative = typeof saved.initiative === 'number' ? saved.initiative : null;
       state.players = saved.players.map(function(sp, idx){ return sanitizePlayer(sp, idx + 1, n); });
       gameStartedAt = typeof saved.gameStartedAt === 'number' ? saved.gameStartedAt : Date.now();
+      timerRunning = !!saved.timerRunning;
       renderSeatsFromState();
     } else {
       rebuildBoard(state.playerCount);
